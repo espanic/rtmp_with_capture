@@ -575,78 +575,38 @@ public final class Camera implements ConnectCheckerRtmp {
     public void onConnectionSuccessRtmp() {
         this.bitrateAdapter = new BitrateAdapter((Listener) (new Listener() {
             public void onBitrateAdapted(int bitrate) {
-                RtmpCameraConnector var10000 = Camera.this.rtmpCamera;
-                if (var10000 == null) {
-                    Intrinsics.throwNpe();
-                }
-
-                var10000.setVideoBitrateOnFly(bitrate);
+                rtmpCamera.setVideoBitrateOnFly(bitrate);
             }
         }));
-        BitrateAdapter var10000 = this.bitrateAdapter;
-        if (var10000 == null) {
-            Intrinsics.throwNpe();
-        }
 
-        RtmpCameraConnector var10001 = this.rtmpCamera;
-        if (var10001 == null) {
-            Intrinsics.throwNpe();
-        }
-
-        var10000.setMaxBitrate(var10001.getBitrate());
+        bitrateAdapter.setMaxBitrate(rtmpCamera.getBitrate());
     }
 
     Override
-    public void onConnectionFailedRtmp(@NotNull final String reason) {
-        Intrinsics.checkParameterIsNotNull(reason, "reason");
+    public void onConnectionFailedRtmp(@NonNull final String reason) {
         if (this.rtmpCamera != null) {
             int i = this.currentRetries;
-            int var3 = this.maxRetries;
-            RtmpCameraConnector var10000;
-            Activity var4;
-            if (i <= var3) {
+            if (i <= this.maxRetries) {
                 while (true) {
                     this.currentRetries = i;
-                    var10000 = this.rtmpCamera;
-                    if (var10000 == null) {
-                        Intrinsics.throwNpe();
-                    }
-
-                    if (var10000.reTry(5000L, reason)) {
-                        var4 = this.activity;
-                        if (var4 == null) {
-                            Intrinsics.throwNpe();
-                        }
-
-                        var4.runOnUiThread((Runnable) (new Runnable() {
+                    if (this.rtmpCamera.reTry(5000L, reason)) {
+                        activity.runOnUiThread((Runnable) (new Runnable() {
                             public final void run() {
                                 Camera.this.getDartMessenger().send(EventType.RTMP_RETRY, reason);
                             }
                         }));
                         return;
                     }
-
-                    if (i == var3) {
+                    if (i == maxRetries) {
                         break;
                     }
-
                     ++i;
                 }
             }
 
-            var10000 = this.rtmpCamera;
-            if (var10000 == null) {
-                Intrinsics.throwNpe();
-            }
-
-            var10000.stopStream();
-            this.rtmpCamera = (RtmpCameraConnector) null;
-            var4 = this.activity;
-            if (var4 == null) {
-                Intrinsics.throwNpe();
-            }
-
-            var4.runOnUiThread((Runnable) (new Runnable() {
+            rtmpCamera.stopStream();
+            this.rtmpCamera =  null;
+            activity.runOnUiThread((Runnable) (new Runnable() {
                 public final void run() {
                     Camera.this.getDartMessenger().send(EventType.RTMP_STOPPED, "Failed retry");
                 }
@@ -657,12 +617,7 @@ public final class Camera implements ConnectCheckerRtmp {
 
     @Override
     public void onAuthErrorRtmp() {
-        Activity var10000 = this.activity;
-        if (var10000 == null) {
-            Intrinsics.throwNpe();
-        }
-
-        var10000.runOnUiThread((Runnable) (new Runnable() {
+        activity.runOnUiThread((Runnable) (new Runnable() {
             public final void run() {
                 Camera.this.getDartMessenger().send(EventType.ERROR, "Auth error");
             }
@@ -671,22 +626,11 @@ public final class Camera implements ConnectCheckerRtmp {
 
     @Override
     public void onDisconnectRtmp() {
-        if (this.rtmpCamera != null) {
-            RtmpCameraConnector var10000 = this.rtmpCamera;
-            if (var10000 == null) {
-                Intrinsics.throwNpe();
-            }
-
-            var10000.stopStream();
-            this.rtmpCamera = (RtmpCameraConnector) null;
+        if (rtmpCamera != null) {
+            rtmpCamera.stopStream();
+            rtmpCamera =  null;
         }
-
-        Activity var1 = this.activity;
-        if (var1 == null) {
-            Intrinsics.throwNpe();
-        }
-
-        var1.runOnUiThread((Runnable) (new Runnable() {
+        activity.runOnUiThread((Runnable) (new Runnable() {
             public final void run() {
                 Camera.this.getDartMessenger().send(EventType.RTMP_STOPPED, "Disconnected");
             }
@@ -743,23 +687,20 @@ public final class Camera implements ConnectCheckerRtmp {
         this.useOpenGL = useOpenGL;
         this.currentOrientation = -1;
         this.maxRetries = 3;
-        Activity var9 = this.activity;
         boolean var10 = false;
         boolean var11 = false;
-        if (var9 == null) {
-            int var12 = false;
-            String var16 = "No activity available!";
-            throw (Throwable) (new IllegalStateException(var16.toString()));
+        if (activity == null) {
+            throw new IllegalStateException("No activity available!");
         } else {
-            Object var10001 = this.activity.getSystemService("camera");
-            if (var10001 == null) {
-                throw new TypeCastException("null cannot be cast to non-null type android.hardware.camera2.CameraManager");
+            Object cameraManager = this.activity.getSystemService(Context.CAMERA_SERVICE);
+            if (cameraManager == null) {
+                throw new NullPointerException("null cannot be cast to non-null type android.hardware.camera2.CameraManager");
             } else {
                 CameraCharacteristics characteristics;
                 boolean var19;
                 label30:
                 {
-                    this.cameraManager = (CameraManager) var10001;
+                    this.cameraManager = (CameraManager) cameraManager;
                     this.orientationEventListener = (OrientationEventListener) (new OrientationEventListener(this.activity.getApplicationContext()) {
                         public void onOrientationChanged(int i) {
                             if (i != -1) {
@@ -786,12 +727,12 @@ public final class Camera implements ConnectCheckerRtmp {
                 }
 
                 this.isFrontFacing = var19;
-                var10001 = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
-                if (var10001 == null) {
+                cameraManager = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+                if (cameraManager == null) {
                     Intrinsics.throwNpe();
                 }
 
-                this.sensorOrientation = ((Number) var10001).intValue();
+                this.sensorOrientation = ((Number) cameraManager).intValue();
                 Resources var20 = this.activity.getResources();
                 Intrinsics.checkExpressionValueIsNotNull(var20, "activity.resources");
                 this.currentOrientation = (int) Math.round((double) var20.getConfiguration().orientation / 90.0D) * 90;
