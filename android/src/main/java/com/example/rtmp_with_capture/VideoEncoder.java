@@ -15,6 +15,9 @@ import android.os.Build.VERSION;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Surface;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import com.pedro.encoder.input.video.FpsLimiter;
 import com.pedro.encoder.utils.CodecUtil;
@@ -28,27 +31,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import kotlin.Metadata;
-import kotlin.TypeCastException;
-import kotlin.jvm.internal.DefaultConstructorMarker;
-import kotlin.jvm.internal.Intrinsics;
-import kotlin.jvm.internal.StringCompanionObject;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-@Metadata(
-        mv = {1, 1, 18},
-        bv = {1, 0, 3},
-        k = 1,
-        d1 = {"\u0000\u009a\u0001\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0000\n\u0002\u0018\u0002\n\u0000\n\u0002\u0010\b\n\u0002\b\u0005\n\u0002\u0010\u000b\n\u0002\b\u0002\n\u0002\u0018\u0002\n\u0002\b\n\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\b\u0007\n\u0002\u0018\u0002\n\u0002\b\t\n\u0002\u0018\u0002\n\u0002\b\u0003\n\u0002\u0018\u0002\n\u0002\b\u0007\n\u0002\u0010\t\n\u0002\b\u000b\n\u0002\u0018\u0002\n\u0002\b\u0005\n\u0002\u0010\u000e\n\u0002\b\u0006\n\u0002\u0010\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\b\u0002\n\u0002\u0018\u0002\n\u0002\b\u0004\n\u0002\u0018\u0002\n\u0002\b\u0003\n\u0002\u0018\u0002\n\u0002\b\u0005\n\u0002\u0018\u0002\n\u0002\b\u000e\u0018\u0000 u2\u00020\u0001:\u0001uBa\u0012\u0006\u0010\u0002\u001a\u00020\u0003\u0012\u0006\u0010\u0004\u001a\u00020\u0005\u0012\u0006\u0010\u0006\u001a\u00020\u0005\u0012\u0006\u0010\u0007\u001a\u00020\u0005\u0012\u0006\u0010\b\u001a\u00020\u0005\u0012\u0006\u0010\t\u001a\u00020\u0005\u0012\u0006\u0010\n\u001a\u00020\u000b\u0012\u0006\u0010\f\u001a\u00020\u0005\u0012\u0006\u0010\r\u001a\u00020\u000e\u0012\b\b\u0002\u0010\u000f\u001a\u00020\u0005\u0012\b\b\u0002\u0010\u0010\u001a\u00020\u0005¢\u0006\u0002\u0010\u0011J\u0018\u0010S\u001a\u00020T2\u0006\u0010U\u001a\u00020V2\u0006\u0010\u0018\u001a\u00020\u0019H\u0004J\u0012\u0010W\u001a\u0004\u0018\u00010\u000e2\u0006\u0010X\u001a\u00020YH\u0002J\u0012\u0010Z\u001a\u0004\u0018\u00010Y2\u0006\u0010[\u001a\u00020MH\u0004J\b\u0010\\\u001a\u00020TH\u0003J&\u0010]\u001a\u0010\u0012\u0004\u0012\u00020V\u0012\u0004\u0012\u00020V\u0018\u00010^2\u0006\u0010_\u001a\u00020V2\u0006\u0010`\u001a\u00020\u0005H\u0002J\u0016\u0010a\u001a\b\u0012\u0004\u0012\u00020V0b2\u0006\u0010c\u001a\u00020VH\u0002J\b\u0010d\u001a\u00020TH\u0007J\u0016\u0010e\u001a\u00020T2\u0006\u0010f\u001a\u00020\u001d2\u0006\u0010g\u001a\u00020hJ\b\u0010i\u001a\u00020TH\u0004J\u001e\u0010j\u001a\u00020T2\u0006\u0010f\u001a\u00020\u001d2\u0006\u0010k\u001a\u00020\u00052\u0006\u0010\u0018\u001a\u00020\u0019J\u0006\u0010l\u001a\u00020\u000bJ(\u0010m\u001a\u00020T2\u0006\u0010U\u001a\u00020V2\u0006\u0010f\u001a\u00020\u001d2\u0006\u0010k\u001a\u00020\u00052\u0006\u0010\u0018\u001a\u00020\u0019H\u0002J\u0006\u0010n\u001a\u00020TJ\u0018\u0010o\u001a\u00020T2\u0006\u0010U\u001a\u00020V2\u0006\u0010\u0018\u001a\u00020\u0019H\u0004J\u0010\u0010p\u001a\u00020T2\u0006\u0010g\u001a\u00020hH\u0002J\u0010\u0010q\u001a\u00020T2\u0006\u0010\b\u001a\u00020\u0005H\u0007J\u0006\u0010r\u001a\u00020TJ\u0006\u0010s\u001a\u00020TJ\b\u0010t\u001a\u00020TH\u0004R\u0011\u0010\u000f\u001a\u00020\u0005¢\u0006\b\n\u0000\u001a\u0004\b\u0012\u0010\u0013R\u0011\u0010\u0010\u001a\u00020\u0005¢\u0006\b\n\u0000\u001a\u0004\b\u0014\u0010\u0013R\u001a\u0010\b\u001a\u00020\u0005X\u0086\u000e¢\u0006\u000e\n\u0000\u001a\u0004\b\u0015\u0010\u0013\"\u0004\b\u0016\u0010\u0017R\u000e\u0010\u0018\u001a\u00020\u0019X\u0082\u0004¢\u0006\u0002\n\u0000R\u0010\u0010\u001a\u001a\u0004\u0018\u00010\u001bX\u0082\u000e¢\u0006\u0002\n\u0000R\u001c\u0010\u001c\u001a\u0004\u0018\u00010\u001dX\u0084\u000e¢\u0006\u000e\n\u0000\u001a\u0004\b\u001e\u0010\u001f\"\u0004\b \u0010!R\u0011\u0010\n\u001a\u00020\u000b¢\u0006\b\n\u0000\u001a\u0004\b\"\u0010#R\u001a\u0010$\u001a\u00020%X\u0086\u000e¢\u0006\u000e\n\u0000\u001a\u0004\b&\u0010'\"\u0004\b(\u0010)R\u0011\u0010\r\u001a\u00020\u000e¢\u0006\b\n\u0000\u001a\u0004\b*\u0010+R\u001a\u0010\u0007\u001a\u00020\u0005X\u0086\u000e¢\u0006\u000e\n\u0000\u001a\u0004\b,\u0010\u0013\"\u0004\b-\u0010\u0017R\u000e\u0010.\u001a\u00020/X\u0082\u0004¢\u0006\u0002\n\u0000R\u0011\u0010\u0002\u001a\u00020\u0003¢\u0006\b\n\u0000\u001a\u0004\b0\u00101R\u000e\u00102\u001a\u000203X\u0082\u000e¢\u0006\u0002\n\u0000R\u0011\u0010\u0006\u001a\u00020\u0005¢\u0006\b\n\u0000\u001a\u0004\b4\u0010\u0013R\u0011\u0010\f\u001a\u00020\u0005¢\u0006\b\n\u0000\u001a\u0004\b5\u0010\u0013R\u000e\u00106\u001a\u00020\u000bX\u0082\u000e¢\u0006\u0002\n\u0000R\u001a\u00107\u001a\u00020\u0005X\u0086\u000e¢\u0006\u000e\n\u0000\u001a\u0004\b8\u0010\u0013\"\u0004\b9\u0010\u0017R\u001a\u0010:\u001a\u00020;X\u0084\u000e¢\u0006\u000e\n\u0000\u001a\u0004\b<\u0010=\"\u0004\b>\u0010?R\u0011\u0010\t\u001a\u00020\u0005¢\u0006\b\n\u0000\u001a\u0004\b@\u0010\u0013R\u001a\u0010A\u001a\u00020\u000bX\u0086\u000e¢\u0006\u000e\n\u0000\u001a\u0004\bB\u0010#\"\u0004\bC\u0010DR\u000e\u0010E\u001a\u00020\u000bX\u0082\u000e¢\u0006\u0002\n\u0000R\u001c\u0010F\u001a\u0004\u0018\u00010GX\u0086\u000e¢\u0006\u000e\n\u0000\u001a\u0004\bH\u0010I\"\u0004\bJ\u0010KR\u001a\u0010L\u001a\u00020MX\u0086\u000e¢\u0006\u000e\n\u0000\u001a\u0004\bN\u0010O\"\u0004\bP\u0010QR\u0011\u0010\u0004\u001a\u00020\u0005¢\u0006\b\n\u0000\u001a\u0004\bR\u0010\u0013¨\u0006v"},
-        d2 = {"Lcom/marshalltechnology/video_stream/VideoEncoder;", "", "getVideoData", "Lcom/pedro/encoder/video/GetVideoData;", "width", "", "height", "fps", "bitrate", "rotation", "doRotation", "", "iFrameInterval", "formatVideoEncoder", "Lcom/pedro/encoder/video/FormatVideoEncoder;", "avcProfile", "avcProfileLevel", "(Lcom/pedro/encoder/video/GetVideoData;IIIIIZILcom/pedro/encoder/video/FormatVideoEncoder;II)V", "getAvcProfile", "()I", "getAvcProfileLevel", "getBitrate", "setBitrate", "(I)V", "bufferInfo", "Landroid/media/MediaCodec$BufferInfo;", "callback", "Landroid/media/MediaCodec$Callback;", "codec", "Landroid/media/MediaCodec;", "getCodec", "()Landroid/media/MediaCodec;", "setCodec", "(Landroid/media/MediaCodec;)V", "getDoRotation", "()Z", "force", "Lcom/pedro/encoder/utils/CodecUtil$Force;", "getForce", "()Lcom/pedro/encoder/utils/CodecUtil$Force;", "setForce", "(Lcom/pedro/encoder/utils/CodecUtil$Force;)V", "getFormatVideoEncoder", "()Lcom/pedro/encoder/video/FormatVideoEncoder;", "getFps", "setFps", "fpsLimiter", "Lcom/pedro/encoder/input/video/FpsLimiter;", "getGetVideoData", "()Lcom/pedro/encoder/video/GetVideoData;", "handlerThread", "Landroid/os/HandlerThread;", "getHeight", "getIFrameInterval", "isBufferMode", "limitFps", "getLimitFps", "setLimitFps", "presentTimeUs", "", "getPresentTimeUs", "()J", "setPresentTimeUs", "(J)V", "getRotation", "running", "getRunning", "setRunning", "(Z)V", "spsPpsSetted", "surface", "Landroid/view/Surface;", "getSurface", "()Landroid/view/Surface;", "setSurface", "(Landroid/view/Surface;)V", "type", "", "getType", "()Ljava/lang/String;", "setType", "(Ljava/lang/String;)V", "getWidth", "checkBuffer", "", "byteBuffer", "Ljava/nio/ByteBuffer;", "chooseColorDynamically", "mediaCodecInfo", "Landroid/media/MediaCodecInfo;", "chooseEncoder", "mime", "createAsyncCallback", "decodeSpsPpsFromBuffer", "Landroid/util/Pair;", "outputBuffer", "length", "extractVpsSpsPpsFromH265", "Ljava/util/List;", "csd0byteBuffer", "forceSyncFrame", "formatChanged", "mediaCodec", "mediaFormat", "Landroid/media/MediaFormat;", "getDataFromEncoder", "outputAvailable", "outBufferIndex", "prepare", "processOutput", "reset", "sendBuffer", "sendSPSandPPS", "setVideoBitrateOnFly", "start", "stop", "stopImp", "Companion", "android.video_stream"}
-)
+
 public final class VideoEncoder {
     private boolean spsPpsSetted;
     @Nullable
     private Surface surface;
     private final FpsLimiter fpsLimiter;
-    @NotNull
+    @NonNull
     private String type;
     private HandlerThread handlerThread;
     @Nullable
@@ -56,12 +46,12 @@ public final class VideoEncoder {
     private Callback callback;
     private boolean isBufferMode;
     private long presentTimeUs;
-    @NotNull
+    @NonNull
     private Force force;
     private final BufferInfo bufferInfo;
     private volatile boolean running;
     private int limitFps;
-    @NotNull
+    @NonNull
     private final GetVideoData getVideoData;
     private final int width;
     private final int height;
@@ -70,13 +60,11 @@ public final class VideoEncoder {
     private final int rotation;
     private final boolean doRotation;
     private final int iFrameInterval;
-    @NotNull
+    @NonNull
     private final FormatVideoEncoder formatVideoEncoder;
     private final int avcProfile;
     private final int avcProfileLevel;
     private static final String TAG = "VideoEncoder";
-    @NotNull
-    public static final VideoEncoder.Companion Companion = new VideoEncoder.Companion((DefaultConstructorMarker)null);
 
     @Nullable
     public final Surface getSurface() {
@@ -87,14 +75,13 @@ public final class VideoEncoder {
         this.surface = var1;
     }
 
-    @NotNull
+    @NonNull
     public final String getType() {
         return this.type;
     }
 
-    public final void setType(@NotNull String var1) {
-        Intrinsics.checkParameterIsNotNull(var1, "<set-?>");
-        this.type = var1;
+    public final void setType(@NonNull String type) {
+        this.type = type;
     }
 
     @Nullable
@@ -114,14 +101,13 @@ public final class VideoEncoder {
         this.presentTimeUs = var1;
     }
 
-    @NotNull
+    @NonNull
     public final Force getForce() {
         return this.force;
     }
 
-    public final void setForce(@NotNull Force var1) {
-        Intrinsics.checkParameterIsNotNull(var1, "<set-?>");
-        this.force = var1;
+    public final void setForce(@NonNull Force force) {
+        this.force = force;
     }
 
     public final boolean getRunning() {
@@ -144,7 +130,7 @@ public final class VideoEncoder {
         MediaCodecInfo encoder = this.chooseEncoder(this.type);
         FormatVideoEncoder videoEncoder = this.formatVideoEncoder;
 
-        boolean var3;
+        boolean success;
         try {
             if (encoder == null) {
                 Log.e(TAG, "Valid encoder not found");
@@ -160,18 +146,11 @@ public final class VideoEncoder {
                 }
             }
 
-            MediaFormat videoFormat = null;
-            String resolution = "" + this.width + "x" + this.height;
-            MediaFormat var10000 = MediaFormat.createVideoFormat(this.type, this.width, this.height);
-            Intrinsics.checkExpressionValueIsNotNull(var10000, "MediaFormat.createVideoFormat(type, width, height)");
-            videoFormat = var10000;
-            String var8 = TAG;
-            StringBuilder var10001 = (new StringBuilder()).append("Prepare video info: ");
-            if (videoEncoder == null) {
-                Intrinsics.throwNpe();
-            }
 
-            Log.i(var8, var10001.append(videoEncoder.name().toString()).append(", ").append(resolution).toString());
+            String resolution = "" + this.width + "x" + this.height;
+            MediaFormat videoFormat = MediaFormat.createVideoFormat(this.type, this.width, this.height);
+            StringBuilder sb = (new StringBuilder()).append("Prepare video info: ");
+            Log.i(TAG, sb.append(videoEncoder.name().toString()).append(", ").append(resolution).toString());
             videoFormat.setInteger("color-format", videoEncoder.getFormatCodec());
             videoFormat.setInteger("max-input-size", 0);
             videoFormat.setInteger("bitrate", this.bitrate);
@@ -183,31 +162,22 @@ public final class VideoEncoder {
                 videoFormat.setInteger("level", this.avcProfileLevel);
             }
 
-            MediaCodec var9 = this.codec;
-            if (var9 == null) {
-                Intrinsics.throwNpe();
-            }
 
-            var9.configure(videoFormat, (Surface)null, (MediaCrypto)null, 1);
+            codec.configure(videoFormat, (Surface)null, (MediaCrypto)null, MediaCodec.CONFIGURE_FLAG_ENCODE);
             this.running = false;
             this.isBufferMode = false;
-            MediaCodec var10 = this.codec;
-            if (var10 == null) {
-                Intrinsics.throwNpe();
-            }
-
-            this.surface = var10.createInputSurface();
+            this.surface = codec.createInputSurface();
             Log.i(TAG, "prepared");
-            var3 = true;
+            success = true;
         } catch (IOException var5) {
             Log.e(TAG, "Create VideoEncoder failed.", (Throwable)var5);
-            var3 = false;
+            success = false;
         } catch (IllegalStateException var6) {
             Log.e(TAG, "Create VideoEncoder failed.", (Throwable)var6);
-            var3 = false;
+            success = false;
         }
 
-        return var3;
+        return success;
     }
 
     public final void start() {
@@ -220,35 +190,19 @@ public final class VideoEncoder {
 
         this.handlerThread.start();
         Handler handler = new Handler(this.handlerThread.getLooper());
-        MediaCodec var10000;
         if (VERSION.SDK_INT >= 23) {
             this.createAsyncCallback();
-            var10000 = this.codec;
-            if (var10000 == null) {
-                Intrinsics.throwNpe();
-            }
-
-            var10000.setCallback(this.callback, handler);
-            var10000 = this.codec;
-            if (var10000 == null) {
-                Intrinsics.throwNpe();
-            }
-
-            var10000.start();
+            codec.setCallback(this.callback, handler);
+            codec.start();
         } else {
-            var10000 = this.codec;
-            if (var10000 == null) {
-                Intrinsics.throwNpe();
-            }
-
-            var10000.start();
+            codec.start();
             handler.post((Runnable)(new Runnable() {
                 public final void run() {
                     while(VideoEncoder.this.getRunning()) {
                         try {
                             VideoEncoder.this.getDataFromEncoder();
-                        } catch (IllegalStateException var2) {
-                            Log.i(VideoEncoder.TAG, "Encoding error", (Throwable)var2);
+                        } catch (IllegalStateException e) {
+                            Log.i(VideoEncoder.TAG, "Encoding error", e);
                         }
                     }
 
@@ -278,33 +232,15 @@ public final class VideoEncoder {
         this.running = false;
         VideoEncoder var3 = this;
 
-        VideoEncoder var10000;
-        Object var1;
+
         try {
-            var10000 = var3;
-            MediaCodec var10001 = this.codec;
-            if (var10001 == null) {
-                Intrinsics.throwNpe();
-            }
-
-            var10001.stop();
-            var10001 = this.codec;
-            if (var10001 == null) {
-                Intrinsics.throwNpe();
-            }
-
-            var10001.release();
+            codec.stop();
+            codec.release();
             this.stopImp();
-            var1 = null;
-        } catch (IllegalStateException var4) {
-            var10000 = this;
-            var1 = null;
-        } catch (NullPointerException var5) {
-            var10000 = this;
-            var1 = null;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        var10000.codec = (MediaCodec)var1;
+        codec =null;
     }
 
     public final void reset() {
@@ -314,11 +250,11 @@ public final class VideoEncoder {
     }
 
     private final FormatVideoEncoder chooseColorDynamically(MediaCodecInfo mediaCodecInfo) {
-        int[] var4 = mediaCodecInfo.getCapabilitiesForType(this.type).colorFormats;
-        int var5 = var4.length;
+        int[] capabilities = mediaCodecInfo.getCapabilitiesForType(this.type).colorFormats;
+        int length = capabilities.length;
 
-        for(int var3 = 0; var3 < var5; ++var3) {
-            int color = var4[var3];
+        for(int i = 0; i < length; ++i) {
+            int color = capabilities[i];
             if (color == FormatVideoEncoder.YUV420PLANAR.getFormatCodec()) {
                 return FormatVideoEncoder.YUV420PLANAR;
             }
@@ -341,14 +277,9 @@ public final class VideoEncoder {
             bundle.putInt("video-bitrate", bitrate);
 
             try {
-                MediaCodec var10000 = this.codec;
-                if (var10000 == null) {
-                    Intrinsics.throwNpe();
-                }
-
-                var10000.setParameters(bundle);
-            } catch (IllegalStateException var4) {
-                Log.e(TAG, "encoder need be running", (Throwable)var4);
+                codec.setParameters(bundle);
+            } catch (IllegalStateException e) {
+                Log.e(TAG, "encoder need be running", e);
             }
         }
 
@@ -361,14 +292,8 @@ public final class VideoEncoder {
         if (this.running) {
             Bundle bundle = new Bundle();
             bundle.putInt("request-sync", 0);
-
             try {
-                MediaCodec var10000 = this.codec;
-                if (var10000 == null) {
-                    Intrinsics.throwNpe();
-                }
-
-                var10000.setParameters(bundle);
+                codec.setParameters(bundle);
             } catch (IllegalStateException var3) {
                 Log.e(TAG, "encoder need be running", (Throwable)var3);
             }
@@ -377,25 +302,11 @@ public final class VideoEncoder {
     }
 
     private final void sendSPSandPPS(MediaFormat mediaFormat) {
-        String var10000 = this.type;
-        if (var10000 == null) {
-            Intrinsics.throwNpe();
-        }
 
-        if (var10000.equals("video/hevc")) {
-            ByteBuffer var10001 = mediaFormat.getByteBuffer("csd-0");
-            if (var10001 == null) {
-                Intrinsics.throwNpe();
-            }
 
-            Intrinsics.checkExpressionValueIsNotNull(var10001, "mediaFormat.getByteBuffer(\"csd-0\")!!");
-            List byteBufferList = this.extractVpsSpsPpsFromH265(var10001);
-            GetVideoData var3 = this.getVideoData;
-            if (byteBufferList == null) {
-                Intrinsics.throwNpe();
-            }
-
-            var3.onSpsPpsVps((ByteBuffer)byteBufferList.get(1), (ByteBuffer)byteBufferList.get(2), (ByteBuffer)byteBufferList.get(0));
+        if (type.equals("video/hevc")) {
+            List byteBufferList = this.extractVpsSpsPpsFromH265(mediaFormat.getByteBuffer("csd-0"));
+            getVideoData.onSpsPpsVps((ByteBuffer)byteBufferList.get(1), (ByteBuffer)byteBufferList.get(2), (ByteBuffer)byteBufferList.get(0));
         } else {
             this.getVideoData.onSpsPps(mediaFormat.getByteBuffer("csd-0"), mediaFormat.getByteBuffer("csd-1"));
         }
@@ -403,62 +314,38 @@ public final class VideoEncoder {
     }
 
     @Nullable
-    protected final MediaCodecInfo chooseEncoder(@NotNull String mime) {
-        Intrinsics.checkParameterIsNotNull(mime, "mime");
-        List var10000;
+    protected final MediaCodecInfo chooseEncoder(@NonNull String mime) {
+        List<MediaCodecInfo> mediaCodecInfoList;
         if (this.force == Force.HARDWARE) {
-            var10000 = CodecUtil.getAllHardwareEncoders(mime);
-            if (var10000 == null) {
-                throw new TypeCastException("null cannot be cast to non-null type java.util.List<android.media.MediaCodecInfo>");
+            mediaCodecInfoList = CodecUtil.getAllHardwareEncoders(mime);
+            if (mediaCodecInfoList == null) {
+                throw new NullPointerException("null cannot be cast to non-null type java.util.List<android.media.MediaCodecInfo>");
             }
         } else if (this.force == Force.SOFTWARE) {
-            var10000 = CodecUtil.getAllSoftwareEncoders(mime);
-            if (var10000 == null) {
-                throw new TypeCastException("null cannot be cast to non-null type java.util.List<android.media.MediaCodecInfo>");
+            mediaCodecInfoList = CodecUtil.getAllSoftwareEncoders(mime);
+            if (mediaCodecInfoList == null) {
+                throw new NullPointerException("null cannot be cast to non-null type java.util.List<android.media.MediaCodecInfo>");
             }
         } else {
-            var10000 = CodecUtil.getAllEncoders(mime);
-            if (var10000 == null) {
-                throw new TypeCastException("null cannot be cast to non-null type java.util.List<android.media.MediaCodecInfo>");
+            mediaCodecInfoList = CodecUtil.getAllEncoders(mime);
+            if (mediaCodecInfoList == null) {
+                throw new NullPointerException("null cannot be cast to non-null type java.util.List<android.media.MediaCodecInfo>");
             }
         }
 
-        List mediaCodecInfoList = var10000;
-        if (mediaCodecInfoList == null) {
-            Intrinsics.throwNpe();
-        }
 
-        Iterator var4 = mediaCodecInfoList.iterator();
-
-        while(var4.hasNext()) {
-            MediaCodecInfo mci = (MediaCodecInfo)var4.next();
-            String var12 = TAG;
-            StringCompanionObject var5 = StringCompanionObject.INSTANCE;
-            String var6 = "VideoEncoder %s";
-            Object[] var7 = new Object[]{mci.getName()};
-            boolean var8 = false;
-            String var10001 = String.format(var6, Arrays.copyOf(var7, var7.length));
-            Intrinsics.checkExpressionValueIsNotNull(var10001, "java.lang.String.format(format, *args)");
-            Log.i(var12, var10001);
-            CodecCapabilities var13 = mci.getCapabilitiesForType(mime);
-            Intrinsics.checkExpressionValueIsNotNull(var13, "mci.getCapabilitiesForType(mime)");
-            CodecCapabilities codecCapabilities = var13;
-            int[] var15 = codecCapabilities.colorFormats;
-            int var9 = var15.length;
-
-            for(int var14 = 0; var14 < var9; ++var14) {
-                int color = var15[var14];
-                Log.i(TAG, "Color supported: " + color);
-                if (this.formatVideoEncoder == FormatVideoEncoder.SURFACE) {
-                    if (color == FormatVideoEncoder.SURFACE.getFormatCodec()) {
-                        return mci;
-                    }
-                } else if (color == FormatVideoEncoder.YUV420PLANAR.getFormatCodec() || color == FormatVideoEncoder.YUV420SEMIPLANAR.getFormatCodec()) {
-                    return mci;
+        for(MediaCodecInfo mci : mediaCodecInfoList){
+            Log.i(TAG, String.format("VideoEncoder %s", mci.getName()));
+            CodecCapabilities codecCapabilities = mci.getCapabilitiesForType(mime);
+            for(int color : codecCapabilities.colorFormats){
+                Log.i(TAG, "Color supported");
+                if(formatVideoEncoder == FormatVideoEncoder.SURFACE){
+                    if(color == FormatVideoEncoder.SURFACE.getFormatCodec()) return  mci;
+                }else{
+                    if(color == FormatVideoEncoder.YUV420PLANAR.getFormatCodec() || color == FormatVideoEncoder.YUV422SEMIPLANAR.getFormatCodec()) return  mci;
                 }
             }
         }
-
         return null;
     }
 
@@ -499,12 +386,9 @@ public final class VideoEncoder {
         int spsPosition = -1;
         int ppsPosition = -1;
         int contBufferInitiation = 0;
-        byte[] var10000 = csd0byteBuffer.array();
-        Intrinsics.checkExpressionValueIsNotNull(var10000, "csd0byteBuffer.array()");
-        byte[] csdArray = var10000;
-        int i = 0;
+        byte[] csdArray = csd0byteBuffer.array();
 
-        for(int var9 = csdArray.length; i < var9; ++i) {
+        for(int i = 0; i < csdArray.length; i++) {
             if (contBufferInitiation == 3 && csdArray[i] == 1) {
                 if (vpsPosition == -1) {
                     vpsPosition = i - 3;
@@ -525,9 +409,7 @@ public final class VideoEncoder {
         byte[] vps = new byte[spsPosition];
         byte[] sps = new byte[ppsPosition - spsPosition];
         byte[] pps = new byte[csdArray.length - ppsPosition];
-        int i = 0;
-
-        for(int var12 = csdArray.length; i < var12; ++i) {
+        for(int i = 0; i < csdArray.length; i++) {
             if (i < spsPosition) {
                 vps[i] = csdArray[i];
             } else if (i < ppsPosition) {
@@ -537,15 +419,10 @@ public final class VideoEncoder {
             }
         }
 
-        ByteBuffer var10001 = ByteBuffer.wrap(vps);
-        Intrinsics.checkExpressionValueIsNotNull(var10001, "ByteBuffer.wrap(vps)");
-        byteBufferList.add(var10001);
-        var10001 = ByteBuffer.wrap(sps);
-        Intrinsics.checkExpressionValueIsNotNull(var10001, "ByteBuffer.wrap(sps)");
-        byteBufferList.add(var10001);
-        var10001 = ByteBuffer.wrap(pps);
-        Intrinsics.checkExpressionValueIsNotNull(var10001, "ByteBuffer.wrap(pps)");
-        byteBufferList.add(var10001);
+
+        byteBufferList.add(ByteBuffer.wrap(vps));
+        byteBufferList.add(ByteBuffer.wrap(sps));
+        byteBufferList.add(ByteBuffer.wrap(pps));
         return byteBufferList;
     }
 
@@ -553,59 +430,31 @@ public final class VideoEncoder {
         Log.i(TAG, "getDataFromEncoder");
 
         while(this.running) {
-            MediaCodec var10000 = this.codec;
-            if (var10000 == null) {
-                Intrinsics.throwNpe();
-            }
 
-            int outBufferIndex = var10000.dequeueOutputBuffer(this.bufferInfo, 1L);
+            int outBufferIndex = codec.dequeueOutputBuffer(this.bufferInfo, 1L);
             MediaCodec var10001;
             if (outBufferIndex == -2) {
-                var10000 = this.codec;
-                if (var10000 == null) {
-                    Intrinsics.throwNpe();
-                }
-
-                MediaFormat var3 = var10000.getOutputFormat();
-                Intrinsics.checkExpressionValueIsNotNull(var3, "codec!!.getOutputFormat()");
-                MediaFormat mediaFormat = var3;
-                var10001 = this.codec;
-                if (var10001 == null) {
-                    Intrinsics.throwNpe();
-                }
-
-                this.formatChanged(var10001, mediaFormat);
+                this.formatChanged(codec, codec.getOutputFormat());
             } else {
                 if (outBufferIndex < 0) {
                     break;
                 }
-
-                var10001 = this.codec;
-                if (var10001 == null) {
-                    Intrinsics.throwNpe();
-                }
-
-                this.outputAvailable(var10001, outBufferIndex, this.bufferInfo);
+                this.outputAvailable(codec, outBufferIndex, this.bufferInfo);
             }
         }
 
     }
 
-    public final void formatChanged(@NotNull MediaCodec mediaCodec, @NotNull MediaFormat mediaFormat) {
-        Intrinsics.checkParameterIsNotNull(mediaCodec, "mediaCodec");
-        Intrinsics.checkParameterIsNotNull(mediaFormat, "mediaFormat");
+    public final void formatChanged(@NonNull MediaCodec mediaCodec, @NonNull MediaFormat mediaFormat) {
         this.getVideoData.onVideoFormat(mediaFormat);
         this.sendSPSandPPS(mediaFormat);
         this.spsPpsSetted = true;
     }
 
-    protected final void checkBuffer(@NotNull ByteBuffer byteBuffer, @NotNull BufferInfo bufferInfo) {
-        Intrinsics.checkParameterIsNotNull(byteBuffer, "byteBuffer");
-        Intrinsics.checkParameterIsNotNull(bufferInfo, "bufferInfo");
+    protected final void checkBuffer(@NonNull ByteBuffer byteBuffer, @NonNull BufferInfo bufferInfo) {
         if ((bufferInfo.flags & 2) != 0 && !this.spsPpsSetted) {
-            ByteBuffer var10001 = byteBuffer.duplicate();
-            Intrinsics.checkExpressionValueIsNotNull(var10001, "byteBuffer.duplicate()");
-            Pair buffers = this.decodeSpsPpsFromBuffer(var10001, bufferInfo.size);
+            ByteBuffer bb = byteBuffer.duplicate();
+            Pair buffers = this.decodeSpsPpsFromBuffer(bb, bufferInfo.size);
             if (buffers != null) {
                 this.getVideoData.onSpsPps((ByteBuffer)buffers.first, (ByteBuffer)buffers.second);
                 this.spsPpsSetted = true;
@@ -614,9 +463,7 @@ public final class VideoEncoder {
 
     }
 
-    protected final void sendBuffer(@NotNull ByteBuffer byteBuffer, @NotNull BufferInfo bufferInfo) {
-        Intrinsics.checkParameterIsNotNull(byteBuffer, "byteBuffer");
-        Intrinsics.checkParameterIsNotNull(bufferInfo, "bufferInfo");
+    protected final void sendBuffer(@NonNull ByteBuffer byteBuffer, @NonNull BufferInfo bufferInfo) {
         bufferInfo.presentationTimeUs = System.nanoTime() / (long)1000 - this.presentTimeUs;
         this.getVideoData.getVideoData(byteBuffer, bufferInfo);
     }
@@ -637,50 +484,37 @@ public final class VideoEncoder {
     private final void createAsyncCallback() {
         Log.i(TAG, "createAsyncCallback");
         this.callback = (Callback)(new Callback() {
-            public void onInputBufferAvailable(@NotNull MediaCodec mediaCodec, int inBufferIndex) {
-                Intrinsics.checkParameterIsNotNull(mediaCodec, "mediaCodec");
+            public void onInputBufferAvailable(@NonNull MediaCodec mediaCodec, int inBufferIndex) {
                 Log.i(VideoEncoder.TAG, "onInputBufferAvailable ignored");
             }
 
-            public void onOutputBufferAvailable(@NotNull MediaCodec mediaCodec, int outBufferIndex, @NotNull BufferInfo bufferInfo) {
-                Intrinsics.checkParameterIsNotNull(mediaCodec, "mediaCodec");
-                Intrinsics.checkParameterIsNotNull(bufferInfo, "bufferInfo");
+            public void onOutputBufferAvailable(@NonNull MediaCodec mediaCodec, int outBufferIndex, @NonNull BufferInfo bufferInfo) {
 
                 try {
                     VideoEncoder.this.outputAvailable(mediaCodec, outBufferIndex, bufferInfo);
-                } catch (IllegalStateException var5) {
-                    Log.i(VideoEncoder.TAG, "Encoding error", (Throwable)var5);
+                } catch (IllegalStateException e) {
+                    Log.i(VideoEncoder.TAG, "Encoding error", (Throwable)e);
                 }
 
             }
 
-            public void onError(@NotNull MediaCodec mediaCodec, @NotNull CodecException e) {
-                Intrinsics.checkParameterIsNotNull(mediaCodec, "mediaCodec");
-                Intrinsics.checkParameterIsNotNull(e, "e");
+            public void onError(@NonNull MediaCodec mediaCodec, @NonNull CodecException e) {
                 Log.e(VideoEncoder.TAG, "Error", (Throwable)e);
             }
 
-            public void onOutputFormatChanged(@NotNull MediaCodec mediaCodec, @NotNull MediaFormat mediaFormat) {
-                Intrinsics.checkParameterIsNotNull(mediaCodec, "mediaCodec");
-                Intrinsics.checkParameterIsNotNull(mediaFormat, "mediaFormat");
+            public void onOutputFormatChanged(@NonNull MediaCodec mediaCodec, @NonNull MediaFormat mediaFormat) {
                 VideoEncoder.this.formatChanged(mediaCodec, mediaFormat);
             }
         });
     }
 
-    public final void outputAvailable(@NotNull MediaCodec mediaCodec, int outBufferIndex, @NotNull BufferInfo bufferInfo) {
-        Intrinsics.checkParameterIsNotNull(mediaCodec, "mediaCodec");
-        Intrinsics.checkParameterIsNotNull(bufferInfo, "bufferInfo");
+    public final void outputAvailable(@NonNull MediaCodec mediaCodec, int outBufferIndex, @NonNull BufferInfo bufferInfo) {
         Log.e(TAG, "outputAvailable " + outBufferIndex);
         ByteBuffer byteBuffer = VERSION.SDK_INT >= 21 ? mediaCodec.getOutputBuffer(outBufferIndex) : mediaCodec.getOutputBuffers()[outBufferIndex];
-        if (byteBuffer == null) {
-            Intrinsics.throwNpe();
-        }
-
         this.processOutput(byteBuffer, mediaCodec, outBufferIndex, bufferInfo);
     }
 
-    @NotNull
+    @NonNull
     public final GetVideoData getGetVideoData() {
         return this.getVideoData;
     }
@@ -721,7 +555,7 @@ public final class VideoEncoder {
         return this.iFrameInterval;
     }
 
-    @NotNull
+    @NonNull
     public final FormatVideoEncoder getFormatVideoEncoder() {
         return this.formatVideoEncoder;
     }
@@ -734,9 +568,7 @@ public final class VideoEncoder {
         return this.avcProfileLevel;
     }
 
-    public VideoEncoder(@NotNull GetVideoData getVideoData, int width, int height, int fps, int bitrate, int rotation, boolean doRotation, int iFrameInterval, @NotNull FormatVideoEncoder formatVideoEncoder, int avcProfile, int avcProfileLevel) {
-        Intrinsics.checkParameterIsNotNull(getVideoData, "getVideoData");
-        Intrinsics.checkParameterIsNotNull(formatVideoEncoder, "formatVideoEncoder");
+    public VideoEncoder(@NonNull GetVideoData getVideoData, int width, int height, int fps, int bitrate, int rotation, boolean doRotation, int iFrameInterval, @NonNull FormatVideoEncoder formatVideoEncoder, int avcProfile, int avcProfileLevel) {
         super();
         this.getVideoData = getVideoData;
         this.width = width;
@@ -757,33 +589,4 @@ public final class VideoEncoder {
         this.limitFps = this.fps;
     }
 
-    // $FF: synthetic method
-    public VideoEncoder(GetVideoData var1, int var2, int var3, int var4, int var5, int var6, boolean var7, int var8, FormatVideoEncoder var9, int var10, int var11, int var12, DefaultConstructorMarker var13) {
-        if ((var12 & 512) != 0) {
-            var10 = -1;
-        }
-
-        if ((var12 & 1024) != 0) {
-            var11 = -1;
-        }
-
-        this(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
-    }
-
-    @Metadata(
-            mv = {1, 1, 18},
-            bv = {1, 0, 3},
-            k = 1,
-            d1 = {"\u0000\u0012\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0010\u000e\n\u0000\b\u0086\u0003\u0018\u00002\u00020\u0001B\u0007\b\u0002¢\u0006\u0002\u0010\u0002R\u0010\u0010\u0003\u001a\u0004\u0018\u00010\u0004X\u0082D¢\u0006\u0002\n\u0000¨\u0006\u0005"},
-            d2 = {"Lcom/marshalltechnology/video_stream/VideoEncoder$Companion;", "", "()V", "TAG", "", "android.video_stream"}
-    )
-    public static final class Companion {
-        private Companion() {
-        }
-
-        // $FF: synthetic method
-        public Companion(DefaultConstructorMarker $constructor_marker) {
-            this();
-        }
-    }
 }

@@ -5,7 +5,6 @@ import com.example.rtmp_with_capture.DartMessenger.EventType;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.graphics.SurfaceTexture;
@@ -60,8 +59,8 @@ import net.ossrs.rtmp.ConnectCheckerRtmp;
 public final class Camera implements ConnectCheckerRtmp {
     private final CameraManager cameraManager;
     private final OrientationEventListener orientationEventListener;
-    private final boolean isFrontFacing;
-    private final int sensorOrientation;
+    private boolean isFrontFacing;
+    private int sensorOrientation;
     private final Size captureSize;
     private final Size previewSize;
     private CameraDevice cameraDevice;
@@ -561,12 +560,7 @@ public final class Camera implements ConnectCheckerRtmp {
     @Override
     public void onNewBitrateRtmp(long bitrate) {
         if (this.bitrateAdapter != null) {
-            BitrateAdapter var10000 = this.bitrateAdapter;
-            if (var10000 == null) {
-                Intrinsics.throwNpe();
-            }
-
-            var10000.setMaxBitrate((int) bitrate);
+            bitrateAdapter.setMaxBitrate((int) bitrate);
         }
 
     }
@@ -582,7 +576,7 @@ public final class Camera implements ConnectCheckerRtmp {
         bitrateAdapter.setMaxBitrate(rtmpCamera.getBitrate());
     }
 
-    Override
+    @Override
     public void onConnectionFailedRtmp(@NonNull final String reason) {
         if (this.rtmpCamera != null) {
             int i = this.currentRetries;
@@ -687,8 +681,6 @@ public final class Camera implements ConnectCheckerRtmp {
         this.useOpenGL = useOpenGL;
         this.currentOrientation = -1;
         this.maxRetries = 3;
-        boolean var10 = false;
-        boolean var11 = false;
         if (activity == null) {
             throw new IllegalStateException("No activity available!");
         } else {
@@ -697,8 +689,7 @@ public final class Camera implements ConnectCheckerRtmp {
                 throw new NullPointerException("null cannot be cast to non-null type android.hardware.camera2.CameraManager");
             } else {
                 CameraCharacteristics characteristics;
-                boolean var19;
-                label30:
+                initialize:
                 {
                     this.cameraManager = (CameraManager) cameraManager;
                     this.orientationEventListener = (OrientationEventListener) (new OrientationEventListener(this.activity.getApplicationContext()) {
@@ -711,74 +702,62 @@ public final class Camera implements ConnectCheckerRtmp {
                         }
                     });
                     this.orientationEventListener.enable();
-                    CameraCharacteristics var10000 = this.cameraManager.getCameraCharacteristics(this.cameraName);
-                    Intrinsics.checkExpressionValueIsNotNull(var10000, "cameraManager.getCameraCharacteristics(cameraName)");
-                    characteristics = var10000;
-                    Integer var18 = (Integer) characteristics.get(CameraCharacteristics.LENS_FACING);
-                    var10 = false;
-                    if (var18 != null) {
-                        if (var18 == 0) {
-                            var19 = true;
-                            break label30;
+                    try {
+                        characteristics = this.cameraManager.getCameraCharacteristics(this.cameraName);
+                        Integer camdir = (Integer) characteristics.get(CameraCharacteristics.LENS_FACING);
+                        if (camdir != null) {
+                            if (camdir == 0) {
+                                isFrontFacing = true;
+                                break initialize;
+                            }
                         }
+                        isFrontFacing = false;
+                        this.sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+                        this.currentOrientation = (int) Math.round((double) activity.getResources().getConfiguration().orientation / 90.0D) * 90;
+                    }catch (Exception e){
+                        Log.e(TAG, "error in getting cameracharacteristics");
                     }
 
-                    var19 = false;
                 }
 
-                this.isFrontFacing = var19;
-                cameraManager = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
-                if (cameraManager == null) {
-                    Intrinsics.throwNpe();
-                }
 
-                this.sensorOrientation = ((Number) cameraManager).intValue();
-                Resources var20 = this.activity.getResources();
-                Intrinsics.checkExpressionValueIsNotNull(var20, "activity.resources");
-                this.currentOrientation = (int) Math.round((double) var20.getConfiguration().orientation / 90.0D) * 90;
-                String var17 = this.resolutionPreset;
-                if (var17 == null) {
-                    Intrinsics.throwNpe();
-                }
 
-                Camera.ResolutionPreset preset = Camera.ResolutionPreset.valueOf(var17);
+                ResolutionPreset preset = ResolutionPreset.valueOf(resolutionPreset);
                 this.recordingProfile = CameraUtils.INSTANCE.getBestAvailableCamcorderProfileForResolutionPreset(this.cameraName, preset);
                 this.captureSize = new Size(this.recordingProfile.videoFrameWidth, this.recordingProfile.videoFrameHeight);
                 this.previewSize = CameraUtils.INSTANCE.computeBestPreviewSize(this.cameraName, preset);
-                var17 = this.streamingPreset;
-                if (var17 == null) {
-                    Intrinsics.throwNpe();
-                }
-
-                Camera.ResolutionPreset streamPreset = Camera.ResolutionPreset.valueOf(var17);
+                ResolutionPreset streamPreset = ResolutionPreset.valueOf(streamingPreset);
                 this.streamingProfile = CameraUtils.INSTANCE.getBestAvailableCamcorderProfileForResolutionPreset(this.cameraName, streamPreset);
             }
         }
     }
 
-    // $FF: synthetic method
-    public static final CameraCaptureSession f(Camera $this) {
-        return $this.cameraCaptureSession;
-    }
+//    // $FF: synthetic method
+//    public static final CameraCaptureSession f(Camera $this) {
+//        return $this.cameraCaptureSession;
+//    }
+//
+//    // $FF: synthetic method
+//    public static final void access$setImageStreamReader$p(Camera $this, ImageReader var1) {
+//        $this.imageStreamReader = var1;
+//    }
+//
+//    // $FF: synthetic method
+//    public static final void access$setRtmpCamera$p(Camera $this, RtmpCameraConnector var1) {
+//        $this.rtmpCamera = var1;
+//    }
 
-    // $FF: synthetic method
-    public static final void access$setImageStreamReader$p(Camera $this, ImageReader var1) {
-        $this.imageStreamReader = var1;
-    }
 
-    // $FF: synthetic method
-    public static final void access$setRtmpCamera$p(Camera $this, RtmpCameraConnector var1) {
-        $this.rtmpCamera = var1;
-    }
-
-
-    public static final class Companion {
-        private Companion() {
-        }
-
-        // $FF: synthetic method
-        public Companion(DefaultConstructorMarker $constructor_marker) {
-            this();
-        }
-    }
+//    public static final class Companion {
+//        private Companion() {
+//        }
+//
+//        // $FF: synthetic method
+//        public Companion(DefaultConstructorMarker $constructor_marker) {
+//            this();
+//        }
+//    }
+}
+enum ResolutionPreset {
+    low, medium, high, veryHigh, ultraHigh, max
 }
