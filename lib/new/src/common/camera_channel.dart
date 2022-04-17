@@ -7,7 +7,7 @@ class CameraChannel {
   static final Map<int, dynamic> callbacks = <int, CameraCallback>{};
 
   static final MethodChannel channel = const MethodChannel(
-    'video_stream',
+    'rtmp_with_capture',
   )..setMethodCallHandler(
       (MethodCall call) async {
         assert(call.method == 'handleCallback');

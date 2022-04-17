@@ -2,11 +2,13 @@ package com.example.rtmp_with_capture;
 
 import android.app.Activity;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.embedding.engine.renderer.FlutterRenderer;
 import io.flutter.plugin.common.BinaryMessenger;
@@ -20,7 +22,7 @@ import io.flutter.view.TextureRegistry;
 /**
  * RtmpWithCapturePlugin
  */
-public class RtmpWithCapturePlugin implements FlutterPlugin {
+public class RtmpWithCapturePlugin implements FlutterPlugin, ActivityAware {
 
     private MethodCallHandlerImpl methodCallHandler;
     private FlutterPluginBinding flutterPluginBinding;
@@ -38,6 +40,7 @@ public class RtmpWithCapturePlugin implements FlutterPlugin {
 
     private final void maybeStartListening(Activity activity, BinaryMessenger messenger, PermissionStuff permissionsRegistry, TextureRegistry textureRegistry) {
         if (Build.VERSION.SDK_INT >= 21) {
+            Log.i("rtmpwithcaptureplugin","maybestartlistening");
             this.methodCallHandler = new MethodCallHandlerImpl(activity, messenger, new CameraPermissions(), permissionsRegistry, textureRegistry);
         }
     }
@@ -54,6 +57,7 @@ public class RtmpWithCapturePlugin implements FlutterPlugin {
     }
 
     public void onAttachedToActivity(@NonNull final ActivityPluginBinding binding) {
+        Log.i("rtmpwithcaptureplugin", "onattachedtoactivity");
         Activity activity = binding.getActivity();
         BinaryMessenger binaryMessenger = flutterPluginBinding.getBinaryMessenger();
 

@@ -303,7 +303,7 @@ class CameraController extends ValueNotifier<CameraValue> {
       throw CameraException(e.code, e.message!);
     }
     _eventSubscription = EventChannel(
-            'video_stream/cameraEvents$_textureId')
+            'rtmp_with_capture/cameraEvents$_textureId')
         .receiveBroadcastStream()
         .listen(_listener);
     _creatingCompleter!.complete();
@@ -380,7 +380,7 @@ class CameraController extends ValueNotifier<CameraValue> {
       throw CameraException(e.code, e.message!);
     }
     const EventChannel cameraEventChannel =
-        EventChannel('video_stream/imageStream');
+        EventChannel('rtmp_with_capture/imageStream');
     _imageStreamSubscription =
         cameraEventChannel.receiveBroadcastStream().listen(
       (dynamic imageData) {
@@ -606,6 +606,29 @@ class CameraController extends ValueNotifier<CameraValue> {
       throw CameraException(e.code, e.message!);
     }
   }
+
+  Future<Uint8List> takePhoto() async {
+    if (!value.isInitialized || _isDisposed!) {
+      throw CameraException(
+        'Uninitialized CameraController',
+        'startVideoStreaming was called on uninitialized CameraController',
+      );
+    }
+    if (value.isRecordingVideo) {
+      throw CameraException(
+        'A video recording is already started.',
+        'startVideoStreaming was called when a recording is already started.',
+      );
+    }
+    try {
+      Uint8List data = await _channel
+          .invokeMethod<Uint8List>('takePhoto')?? Uint8List(0);
+      return data;
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message!);
+    }
+  }
+
 
   /// Releases the resources of this camera.
   @override

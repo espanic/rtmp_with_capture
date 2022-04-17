@@ -2,6 +2,7 @@ package com.example.rtmp_with_capture;
 
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.media.MediaFormat;
 import android.media.MediaCodec.BufferInfo;
 import android.util.Log;
@@ -20,13 +21,15 @@ import com.pedro.encoder.input.audio.MicrophoneManager;
 import com.pedro.encoder.utils.CodecUtil.Force;
 import com.pedro.encoder.video.FormatVideoEncoder;
 import com.pedro.encoder.video.GetVideoData;
-import com.pedro.rtplibrary.rtmp.RtmpCamera2;
 import com.pedro.rtplibrary.util.FpsListener;
 import com.pedro.rtplibrary.util.RecordController;
 import com.pedro.rtplibrary.util.FpsListener.Callback;
 import com.pedro.rtplibrary.util.RecordController.Listener;
 import com.pedro.rtplibrary.util.RecordController.Status;
 import com.pedro.rtplibrary.view.OffScreenGlThread;
+import com.pedro.rtplibrary.view.TakePhotoCallback;
+
+import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import net.ossrs.rtmp.ConnectCheckerRtmp;
 import net.ossrs.rtmp.SrsFlvMuxer;
@@ -52,6 +55,7 @@ public final class RtmpCameraConnector implements GetAacData, GetVideoData, GetM
     private final Context context;
     private final boolean useOpenGL;
     private final boolean isPortrait;
+    private Bitmap captureImage;
     @NonNull
     private final ConnectCheckerRtmp connectChecker;
     private static final String TAG = "RtmpCameraConnector";
@@ -103,6 +107,7 @@ public final class RtmpCameraConnector implements GetAacData, GetVideoData, GetM
     public final boolean prepareVideo(int width, int height, int fps, int bitrate, boolean hardwareRotation, int rotation) {
         return prepareVideo(width, height, fps, bitrate, hardwareRotation, 2, rotation, -1, -1);
     }
+
 
     private final void prepareGlInterface(int rotation) {
         Log.i(TAG, "prepareGlInterface " + rotation + " " + this.isPortrait);
@@ -198,6 +203,25 @@ public final class RtmpCameraConnector implements GetAacData, GetVideoData, GetM
 
     public final void resumeRecord() {
         this.pausedRecording = false;
+    }
+
+
+    public final byte[] takePhoto() {
+        if(glInterface == null){
+            Log.i(TAG,"glinterface null!");
+        }else Log.i(TAG, "glinterface not null!");
+        glInterface.takePhoto(new TakePhotoCallback() {
+            @Override
+            public void onTakePhoto(Bitmap bitmap) {
+                Log.i(TAG, "onTakePhoto bitmap width : " +bitmap.getWidth() + " height : " + bitmap.getHeight());
+                captureImage = bitmap;
+            }
+        });
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        captureImage.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+        captureImage = null;
+        return byteArray;
     }
 
     public final boolean reTry(long delay, @NonNull String reason) {

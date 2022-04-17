@@ -43,7 +43,7 @@ public final class DartMessenger {
     public DartMessenger(@NonNull BinaryMessenger messenger, long eventChannelId) {
         super();
 
-        (new EventChannel(messenger, "video_stream/cameraEvents" + eventChannelId)).setStreamHandler((StreamHandler)(new StreamHandler() {
+        (new EventChannel(messenger, "rtmp_with_capture/cameraEvents" + eventChannelId)).setStreamHandler((StreamHandler)(new StreamHandler() {
             public void onListen(@Nullable Object arguments, @NonNull EventSink sink) {
                 DartMessenger.this.eventSink = sink;
             }

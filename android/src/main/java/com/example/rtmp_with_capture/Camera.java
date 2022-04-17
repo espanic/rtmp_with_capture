@@ -5,6 +5,7 @@ import com.example.rtmp_with_capture.DartMessenger.EventType;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.graphics.SurfaceTexture;
@@ -33,6 +34,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.pedro.rtplibrary.rtmp.RtmpCamera2;
 import com.pedro.rtplibrary.util.BitrateAdapter;
 import com.pedro.rtplibrary.util.BitrateAdapter.Listener;
 
@@ -92,25 +94,25 @@ public final class Camera implements ConnectCheckerRtmp {
     private static final String TAG = "FlutterCamera";
 
     private final void prepareCameraForRecordAndStream(int fps, Integer bitrate) throws IOException {
-        RtmpCameraConnector rtmpCamera;
         if (this.rtmpCamera != null) {
-            rtmpCamera = this.rtmpCamera;
             rtmpCamera.stopStream();
-            this.rtmpCamera = (RtmpCameraConnector) null;
+            this.rtmpCamera = null;
         }
 
         Log.i(TAG, "prepareCameraForRecordAndStream(opengl=" + this.useOpenGL + ", portrait: " + this.isPortrait() + ", currentOrientation: " + this.currentOrientation + ", mediaOrientation: " + this.getMediaOrientation() + ", frontfacing: " + this.isFrontFacing + ")");
         rtmpCamera = new RtmpCameraConnector(activity.getApplicationContext(), useOpenGL, isPortrait(), this);
-        Activity var10003 = this.activity;
         if (this.enableAudio) {
             rtmpCamera.prepareAudio();
         }
         Integer bitrateToUse = bitrate;
         if (bitrate == null) {
-            bitrateToUse = 1228800;
+            bitrateToUse = 1200 * 1024;
         }
-        rtmpCamera = this.rtmpCamera;
         rtmpCamera.prepareVideo(!this.isPortrait() ? this.streamingProfile.videoFrameWidth : this.streamingProfile.videoFrameHeight, !this.isPortrait() ? this.streamingProfile.videoFrameHeight : this.streamingProfile.videoFrameWidth, fps, bitrateToUse, !this.useOpenGL, this.getMediaOrientation());
+    }
+
+    public final byte[] takePhoto(){
+        return rtmpCamera.takePhoto();
     }
 
     @SuppressLint({"MissingPermission"})

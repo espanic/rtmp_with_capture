@@ -3,7 +3,9 @@ package com.example.rtmp_with_capture;
 
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.hardware.camera2.CameraAccessException;
+import android.nfc.Tag;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,6 +37,7 @@ public final class MethodCallHandlerImpl implements MethodCallHandler {
     public void onMethodCall(@NonNull final MethodCall call, @NonNull final Result result) {
 
         String method = call.method;
+        Log.i("methodcallhandlerimpl", method);
         if (method != null) {
             Integer bitrate;
                     if (method.equals("availableCameras")) {
@@ -162,6 +165,14 @@ public final class MethodCallHandlerImpl implements MethodCallHandler {
                         return;
                     }
 
+                    if(method.equals("takePhoto")){
+                        Log.i("mh", "takephoto");
+                        byte[] byteArray = new byte[100];
+
+                        camera.takePhoto();
+                        result.success(byteArray);
+                    }
+
         }
 
         result.notImplemented();
@@ -208,9 +219,9 @@ public final class MethodCallHandlerImpl implements MethodCallHandler {
         this.cameraPermissions = cameraPermissions;
         this.permissionsRegistry = permissionsRegistry;
         this.textureRegistry = textureRegistry;
-        this.methodChannel = new MethodChannel(this.messenger, "video_stream");
-        this.imageStreamChannel = new EventChannel(this.messenger, "video_stream/imageStream");
-        this.methodChannel.setMethodCallHandler((MethodCallHandler)this);
+        this.methodChannel = new MethodChannel(this.messenger, "rtmp_with_capture");
+        this.imageStreamChannel = new EventChannel(this.messenger, "rtmp_with_capture/imageStream");
+        this.methodChannel.setMethodCallHandler(this);
     }
 }
 
