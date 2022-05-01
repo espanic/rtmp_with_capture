@@ -459,7 +459,7 @@ class CameraController extends ValueNotifier<CameraValue> {
   ///
   /// Throws a [CameraException] if the capture fails.
   Future<void> startVideoStreaming(String url,
-      {int bitrate = 1200 * 1024, required bool androidUseOpenGL}) async {
+      {int bitrate = 1200 * 1024, required bool androidUseOpenGL, int? width, int? height}) async {
     if (!value.isInitialized || _isDisposed!) {
       throw CameraException(
         'Uninitialized CameraController',
@@ -491,6 +491,8 @@ class CameraController extends ValueNotifier<CameraValue> {
         'textureId': _textureId,
         'url': url,
         'bitrate': bitrate,
+        'width': width,
+        'height':height
       });
       value =
           value.copyWith(isStreamingVideoRtmp: true, isStreamingPaused: false);
@@ -611,18 +613,20 @@ class CameraController extends ValueNotifier<CameraValue> {
     if (!value.isInitialized || _isDisposed!) {
       throw CameraException(
         'Uninitialized CameraController',
-        'startVideoStreaming was called on uninitialized CameraController',
+        'takePhoto was called on uninitialized CameraController',
       );
     }
     if (value.isRecordingVideo) {
       throw CameraException(
         'A video recording is already started.',
-        'startVideoStreaming was called when a recording is already started.',
+        'takePhoto was called when a recording is already started.',
       );
     }
     try {
+      print("takephoto check1");
       Uint8List data = await _channel
           .invokeMethod<Uint8List>('takePhoto')?? Uint8List(0);
+      print(data.length);
       return data;
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message!);

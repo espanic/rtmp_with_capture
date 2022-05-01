@@ -95,7 +95,7 @@ public final class RtmpCameraConnector implements GetAacData, GetVideoData, GetM
     public final boolean prepareVideo(int width, int height, int fps, int bitrate, boolean hardwareRotation, int iFrameInterval, int rotation, int avcProfile, int avcProfileLevel) {
         this.pausedStreaming = false;
         this.pausedRecording = false;
-        this.videoEncoder = new VideoEncoder((GetVideoData)this, width, height, fps, bitrate, this.useOpenGL ? 0 : rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel);
+        this.videoEncoder = new VideoEncoder(this, width, height, fps, bitrate, this.useOpenGL ? 0 : rotation, hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE, avcProfile, avcProfileLevel);
         boolean result = videoEncoder.prepare();
         if (this.useOpenGL) {
             this.prepareGlInterface(this.ORIENTATIONS.get(rotation));
@@ -206,22 +206,26 @@ public final class RtmpCameraConnector implements GetAacData, GetVideoData, GetM
     }
 
 
-    public final byte[] takePhoto() {
-        if(glInterface == null){
-            Log.i(TAG,"glinterface null!");
-        }else Log.i(TAG, "glinterface not null!");
+    public byte[] takePhoto() {
         glInterface.takePhoto(new TakePhotoCallback() {
             @Override
             public void onTakePhoto(Bitmap bitmap) {
                 Log.i(TAG, "onTakePhoto bitmap width : " +bitmap.getWidth() + " height : " + bitmap.getHeight());
-                captureImage = bitmap;
+                captureImage = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+                Log.i(TAG, "" + bitmap.getHeight());
             }
         });
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        captureImage.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        byte[] byteArray = stream.toByteArray();
-        captureImage = null;
-        return byteArray;
+        if(captureImage == null){
+            return null;
+        }
+        else {
+            Log.i(TAG, "capturing image succeeded");
+            captureImage.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            captureImage = null;
+            return  byteArray;
+        }
     }
 
     public final boolean reTry(long delay, @NonNull String reason) {

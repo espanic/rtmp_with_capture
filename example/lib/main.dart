@@ -41,7 +41,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   late VoidCallback videoPlayerListener;
   bool enableAudio = true;
   bool useOpenGL = true;
-  String streamURL = "rtmp://[your rtmp server address]/live";
+  String streamURL = "rtmp://3.35.108.14/channel2/4fee57cf-6175-4376-a5b1-1345b492b475";
   bool streaming = false;
   String? cameraDirection;
 
@@ -246,6 +246,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                   ],
                 ),
               ),
+              Positioned( top: 200, child: ElevatedButton(onPressed: () async {
+                Uint8List a = await controller!.takePhoto();
+              },child: Text("capture"),))
             ],
           ),
         ),
@@ -318,17 +321,16 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   }
 
   Future<void> onVideoStreamingButtonPressed() async {
-    // startVideoStreaming().then((url) {
-    //   if (mounted) {
-    //     setState(() {
-    //       streaming = true;
-    //     });
-    //   }
-    //   if (url!.isNotEmpty) showInSnackBar('Streaming video to $url');
-    //   Wakelock.enable();
-    // });
-    print("hi");
-    Uint8List a = await controller!.takePhoto();
+    startVideoStreaming().then((url) {
+      if (mounted) {
+        setState(() {
+          streaming = true;
+        });
+      }
+      if (url!.isNotEmpty) showInSnackBar('Streaming video to $url');
+      Wakelock.enable();
+    });
+    // print("hi");
   }
 
   void onStopButtonPressed() {
@@ -372,7 +374,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         _timer = null;
       }
       url = myUrl;
-      await controller!.startVideoStreaming(url!, androidUseOpenGL: false);
+      await controller!.startVideoStreaming(url!, androidUseOpenGL: false, width: 480, height: 640);
       // _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
       //   var stats = await controller!.getStreamStatistics();
       //   print(stats);

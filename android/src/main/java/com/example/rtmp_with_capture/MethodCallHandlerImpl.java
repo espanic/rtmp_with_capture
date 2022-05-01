@@ -75,7 +75,7 @@ public final class MethodCallHandlerImpl implements MethodCallHandler {
                         }
 
 
-                        camera.startVideoStreaming((String)call.argument("url"), bitrate, result);
+                        camera.startVideoStreaming((String)call.argument("url"), bitrate, result, (int) call.argument("width"), (int) call.argument("height"));
                         return;
                     }
 
@@ -166,17 +166,19 @@ public final class MethodCallHandlerImpl implements MethodCallHandler {
                     }
 
                     if(method.equals("takePhoto")){
-                        Log.i("mh", "takephoto");
-                        byte[] byteArray = new byte[100];
-
-                        camera.takePhoto();
+                        byte[] byteArray = camera.takePhoto();
                         result.success(byteArray);
+                        Log.i("mh", "sending byte array");
                     }
 
         }
 
         result.notImplemented();
     }
+
+//    private void generateResults (Byte[] bytearray) {
+//        methodChannel.invokeMethod("");
+//    }
 
     public final void stopListening() {
         this.methodChannel.setMethodCallHandler((MethodCallHandler)null);

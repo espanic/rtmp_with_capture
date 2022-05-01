@@ -111,7 +111,29 @@ public final class Camera implements ConnectCheckerRtmp {
         rtmpCamera.prepareVideo(!this.isPortrait() ? this.streamingProfile.videoFrameWidth : this.streamingProfile.videoFrameHeight, !this.isPortrait() ? this.streamingProfile.videoFrameHeight : this.streamingProfile.videoFrameWidth, fps, bitrateToUse, !this.useOpenGL, this.getMediaOrientation());
     }
 
+    private final void prepareCameraForRecordAndStream(int fps, Integer bitrate, int width, int height) {
+        if (this.rtmpCamera != null) {
+            rtmpCamera.stopStream();
+            this.rtmpCamera = null;
+        }
+
+        Log.i(TAG, "prepareCameraForRecordAndStream(opengl=" + this.useOpenGL + ", portrait: " + this.isPortrait() + ", currentOrientation: " + this.currentOrientation + ", mediaOrientation: " + this.getMediaOrientation() + ", frontfacing: " + this.isFrontFacing + ")");
+        rtmpCamera = new RtmpCameraConnector(activity.getApplicationContext(), useOpenGL, isPortrait(), this);
+        if (this.enableAudio) {
+            rtmpCamera.prepareAudio();
+        }
+        Integer bitrateToUse = bitrate;
+        if (bitrate == null) {
+            bitrateToUse = 1200 * 1024;
+        }
+        rtmpCamera.prepareVideo(height, width, fps, bitrateToUse, !this.useOpenGL, this.getMediaOrientation());
+    }
+
     public final byte[] takePhoto(){
+        if(rtmpCamera == null){
+            Log.i(TAG, "rtmpcamera null! / takephoto");
+            return null;
+        }
         return rtmpCamera.takePhoto();
     }
 
@@ -425,14 +447,17 @@ public final class Camera implements ConnectCheckerRtmp {
         this.orientationEventListener.disable();
     }
 
-    public final void startVideoStreaming(@Nullable final String url, @Nullable Integer bitrate, @NonNull Result result) {
+    public final void startVideoStreaming(@Nullable final String url, @Nullable Integer bitrate, @NonNull Result result, Integer width, Integer height) {
         if (url == null) {
             result.error("fileExists", "Must specify a url.", null);
         } else {
             try {
                 if (this.rtmpCamera == null) {
                     this.currentRetries = 0;
-                    this.prepareCameraForRecordAndStream(this.streamingProfile.videoFrameRate, bitrate);
+                    if(width != null && height != null)
+                        prepareCameraForRecordAndStream(this.streamingProfile.videoFrameRate, bitrate, width, height);
+                    else
+                        prepareCameraForRecordAndStream(this.streamingProfile.videoFrameRate, bitrate);
                     Runnable runnable = (Runnable) (new Runnable() {
                         public final void run() {
                             rtmpCamera.startStream(url);
