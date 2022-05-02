@@ -14,11 +14,6 @@
 #import <libkern/OSAtomic.h>
 #import <Flutter/Flutter.h>
 
-@implementation RtmpWithCapturePlugin
-+ (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [SwiftRtmpWithCapturePlugin registerWithRegistrar:registrar];
-}
-@end
 
 
 static FlutterError *getFlutterError(NSError *error) {
@@ -195,7 +190,7 @@ FlutterStreamHandler>
 @property(strong, nonatomic) AVAssetWriterInputPixelBufferAdaptor *assetWriterPixelBufferAdaptor;
 @property(strong, nonatomic) AVCaptureVideoDataOutput *videoOutput;
 @property(strong, nonatomic) AVCaptureAudioDataOutput *audioOutput;
-@property(strong, nonatomic) SwiftVideoStreamPlugin *rtmpStream;
+@property(strong, nonatomic) SwiftRtmpWithCapturePlugin *rtmpStream;
 @property(assign, nonatomic) BOOL isRecording;
 
 
@@ -638,7 +633,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
             return;
         }
 
-        _rtmpStream = [[SwiftVideoStreamPlugin alloc] initWithSink: _eventSink];
+        _rtmpStream = [[SwiftRtmpWithCapturePlugin alloc] initWithSink: _eventSink];
         if (bitrate == nil || bitrate == 0) {
             bitrate = [NSNumber numberWithInt:160 * 1000];
         }
@@ -842,20 +837,20 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 }
 @end
 
-@interface VideoStreamPlugin ()
+@interface RtmpWithCapturePlugin ()
 @property(readonly, nonatomic) NSObject<FlutterTextureRegistry> *registry;
 @property(readonly, nonatomic) NSObject<FlutterBinaryMessenger> *messenger;
 @property(readonly, nonatomic) FLTCam *camera;
 @end
 
-@implementation VideoStreamPlugin {
+@implementation RtmpWithCapturePlugin {
     dispatch_queue_t _dispatchQueue;
 }
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar> *)registrar {
     FlutterMethodChannel *channel =
-    [FlutterMethodChannel methodChannelWithName:@"video_stream"
+    [FlutterMethodChannel methodChannelWithName:@"rtmp_with_capture"
                                 binaryMessenger:[registrar messenger]];
-    VideoStreamPlugin *instance = [[VideoStreamPlugin alloc] initWithRegistry:[registrar textures]
+    RtmpWithCapturePlugin *instance = [[RtmpWithCapturePlugin alloc] initWithRegistry:[registrar textures]
                                                                         messenger:[registrar messenger]];
     [registrar addMethodCallDelegate:instance channel:channel];
 }
@@ -871,7 +866,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
     if (_dispatchQueue == nil) {
-        _dispatchQueue = dispatch_queue_create("com.marshalltechnology.video_stream.dispatchqueue", NULL);
+        _dispatchQueue = dispatch_queue_create("com.marshalltechnology.rtmp_with_capture.dispatchqueue", NULL);
     }
 
     // Invoke the plugin on another dispatch queue to avoid blocking the UI.
@@ -933,7 +928,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
                 [_registry textureFrameAvailable:textureId];
             };
             FlutterEventChannel *eventChannel = [FlutterEventChannel
-                                                 eventChannelWithName:[NSString stringWithFormat:@"video_stream/cameraEvents%lld",textureId]
+                                                 eventChannelWithName:[NSString stringWithFormat:@"rtmp_with_capture/cameraEvents%lld",textureId]
                                                  binaryMessenger:_messenger];
 
             [eventChannel setStreamHandler:cam];
