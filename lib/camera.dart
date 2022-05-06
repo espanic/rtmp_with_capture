@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 part 'camera_image.dart';
 
 const MethodChannel _channel = MethodChannel('rtmp_with_capture');
+
+typedef TakePhotoCallback = void Function(Image image);
 
 enum CameraLensDirection { front, back, external }
 
@@ -86,7 +89,10 @@ class CameraDescription {
   final CameraLensDirection lensDirection;
   final int sensorOrientation;
 
-  CameraDescription({required this.name, required this.lensDirection, required this.sensorOrientation});
+  CameraDescription(
+      {required this.name,
+      required this.lensDirection,
+      required this.sensorOrientation});
 
   @override
   bool operator ==(Object o) {
@@ -154,15 +160,16 @@ class CameraPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return controller.value.isInitialized
-      ? controller.value.previewSize!.width < controller.value.previewSize!.height 
-        ? RotatedBox(
-          quarterTurns: controller.value.previewQuarterTurns!,
-          child: Texture(
-            textureId: controller._textureId!,
-          ),
-        ) 
-        : Texture(textureId: controller._textureId!)
-      : Container();
+        ? controller.value.previewSize!.width <
+                controller.value.previewSize!.height
+            ? RotatedBox(
+                quarterTurns: controller.value.previewQuarterTurns!,
+                child: Texture(
+                  textureId: controller._textureId!,
+                ),
+              )
+            : Texture(textureId: controller._textureId!)
+        : Container();
   }
 }
 
@@ -177,7 +184,6 @@ class CameraValue {
   final String? errorDescription;
   final Size? previewSize;
   final int? previewQuarterTurns;
-
 
   CameraValue({
     required this.isInitialized,
@@ -258,12 +264,14 @@ class CameraController extends ValueNotifier<CameraValue> {
   final ResolutionPreset? resolutionPreset;
   final ResolutionPreset? streamingPreset;
   final bool? enableAudio;
+  Image? captureImage;
   int? _textureId;
   bool? _isDisposed = false;
   StreamSubscription<dynamic>? _eventSubscription;
   StreamSubscription<dynamic>? _imageStreamSubscription;
   Completer<void>? _creatingCompleter;
   final bool? androidUseOpenGL;
+  TakePhotoCallback? takePhotoCallback;
 
   CameraController(
     this.description,
@@ -271,6 +279,7 @@ class CameraController extends ValueNotifier<CameraValue> {
     this.enableAudio = true,
     this.streamingPreset,
     this.androidUseOpenGL = false,
+    this.takePhotoCallback,
   }) : super(CameraValue.uninitialized());
 
   Future<void> initialize() async {
@@ -278,6 +287,7 @@ class CameraController extends ValueNotifier<CameraValue> {
       return Future<void>.value();
     }
     try {
+      _channel.setMethodCallHandler(_getPhoto);
       _creatingCompleter = Completer<void>();
       final Map<String, dynamic>? reply =
           await _channel.invokeMapMethod<String, dynamic>(
@@ -285,7 +295,8 @@ class CameraController extends ValueNotifier<CameraValue> {
         <String, dynamic>{
           'cameraName': description!.name,
           'resolutionPreset': serializeResolutionPreset(resolutionPreset!),
-          'streamingPreset':serializeResolutionPreset(streamingPreset ?? resolutionPreset!),
+          'streamingPreset':
+              serializeResolutionPreset(streamingPreset ?? resolutionPreset!),
           'enableAudio': enableAudio,
           'enableAndroidOpenGL': androidUseOpenGL ?? false
         },
@@ -302,10 +313,10 @@ class CameraController extends ValueNotifier<CameraValue> {
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message!);
     }
-    _eventSubscription = EventChannel(
-            'rtmp_with_capture/cameraEvents$_textureId')
-        .receiveBroadcastStream()
-        .listen(_listener);
+    _eventSubscription =
+        EventChannel('rtmp_with_capture/cameraEvents$_textureId')
+            .receiveBroadcastStream()
+            .listen(_listener);
     _creatingCompleter!.complete();
     return _creatingCompleter!.future;
   }
@@ -341,7 +352,8 @@ class CameraController extends ValueNotifier<CameraValue> {
         value = value.copyWith(isStreamingVideoRtmp: false);
         break;
       case 'rotation_update':
-        value = value.copyWith(previewQuarterTurns: int.parse(event['errorDescription']));
+        value = value.copyWith(
+            previewQuarterTurns: int.parse(event['errorDescription']));
         break;
     }
   }
@@ -436,7 +448,8 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
 
     try {
-      var data = await _channel.invokeMapMethod<String, dynamic>('getStreamStatistics');
+      var data = await _channel
+          .invokeMapMethod<String, dynamic>('getStreamStatistics');
       return StreamStatistics(
         sentAudioFrames: data!["sentAudioFrames"],
         sentVideoFrames: data["sentVideoFrames"],
@@ -459,7 +472,10 @@ class CameraController extends ValueNotifier<CameraValue> {
   ///
   /// Throws a [CameraException] if the capture fails.
   Future<void> startVideoStreaming(String url,
-      {int bitrate = 1200 * 1024, required bool androidUseOpenGL, int? width, int? height}) async {
+      {int bitrate = 1200 * 1024,
+      required bool androidUseOpenGL,
+      int? width,
+      int? height}) async {
     if (!value.isInitialized || _isDisposed!) {
       throw CameraException(
         'Uninitialized CameraController',
@@ -492,7 +508,7 @@ class CameraController extends ValueNotifier<CameraValue> {
         'url': url,
         'bitrate': bitrate,
         'width': width,
-        'height':height
+        'height': height
       });
       value =
           value.copyWith(isStreamingVideoRtmp: true, isStreamingPaused: false);
@@ -516,7 +532,8 @@ class CameraController extends ValueNotifier<CameraValue> {
       );
     }
     try {
-      value = value.copyWith(isStreamingVideoRtmp: false, isRecordingVideo: false);
+      value =
+          value.copyWith(isStreamingVideoRtmp: false, isRecordingVideo: false);
       print("Stop video streaming call");
       await _channel.invokeMethod<void>(
         'stopRecordingOrStreaming',
@@ -609,7 +626,7 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
   }
 
-  Future<Uint8List> takePhoto() async {
+  Future<void> takePhoto() async {
     if (!value.isInitialized || _isDisposed!) {
       throw CameraException(
         'Uninitialized CameraController',
@@ -623,16 +640,35 @@ class CameraController extends ValueNotifier<CameraValue> {
       );
     }
     try {
-      print("takephoto check1");
-      Uint8List data = await _channel
-          .invokeMethod<Uint8List>('takePhoto')?? Uint8List(0);
-      print(data.length);
-      return data;
+      await _channel.invokeMethod<void>('takePhoto');
+      // return data;
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message!);
     }
   }
 
+  ///callback from android when "takephoto" method is called by flutter
+  Future<void> _getPhoto(MethodCall call) async {
+    if (call.method == 'getPhoto') {
+      Uint8List data = call.arguments;
+      print("data size : ${data.length}");
+      captureImage =
+          Image.memory(data, height: 640, width: 480, fit: BoxFit.none);
+      if (captureImage == null) {
+        print("captureImage null!!");
+      } else {
+        print(
+            "capture image width : ${captureImage!.width}, height : ${captureImage!.height}");
+        if (takePhotoCallback != null) {
+          print("takePhotoCallback called!!");
+          takePhotoCallback!(captureImage!);
+        }
+        else{
+          print("takePhotoCallback null!!");
+        }
+      }
+    }
+  }
 
   /// Releases the resources of this camera.
   @override

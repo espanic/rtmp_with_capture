@@ -32,8 +32,7 @@ void logError(String code, String message) =>
 
 class _CameraExampleHomeState extends State<CameraExampleHome>
     with WidgetsBindingObserver, TickerProviderStateMixin {
-  CameraController? controller =
-  CameraController(cameras[1], ResolutionPreset.high);
+  CameraController? controller;
   String? imagePath;
   String? videoPath;
   String? url;
@@ -41,7 +40,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   late VoidCallback videoPlayerListener;
   bool enableAudio = true;
   bool useOpenGL = true;
-  String streamURL = "rtmp://3.35.108.14/channel2/4e597b66-74cc-4bbd-adc4-290c7fc3b809";
+  String streamURL =
+      "rtmp://3.35.108.14/channel2/4e597b66-74cc-4bbd-adc4-290c7fc3b809";
   bool streaming = false;
   String? cameraDirection;
 
@@ -61,9 +61,12 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   }
 
   Future<void> _initialize() async {
+    print("initialized");
     streaming = false;
     cameraDirection = 'front';
-    // controller = CameraController(cameras[1], Resolution.high);
+    controller = CameraController(cameras[1], ResolutionPreset.high, takePhotoCallback: (image) {
+      _showDialog(image, context);
+    },);
     await controller!.initialize();
     if (!mounted) {
       return;
@@ -102,6 +105,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         ResolutionPreset.high,
         enableAudio: enableAudio,
         androidUseOpenGL: useOpenGL,
+        takePhotoCallback: (image) {
+          _showDialog(image, context);
+        },
       );
 
       // If the controller is updated then update the UI.
@@ -136,6 +142,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         ResolutionPreset.high,
         enableAudio: enableAudio,
         androidUseOpenGL: useOpenGL,
+        takePhotoCallback: (image) {
+          _showDialog(image, context);
+        },
       );
 
       // If the controller is updated then update the UI.
@@ -190,47 +199,49 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                   elevation: 0.0,
                   title: streaming
                       ? ElevatedButton(
-                    onPressed: () => onStopButtonPressed(),
-                    style: ButtonStyle(
-                        backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.red)),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.videocam_off),
-                        SizedBox(width: 10),
-                        Text(
-                          'End Stream',
-                          style: TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
+                          onPressed: () => onStopButtonPressed(),
+                          style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.all<Color>(Colors.red)),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.videocam_off),
+                              SizedBox(width: 10),
+                              Text(
+                                'End Stream',
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                  )
+                        )
                       : ElevatedButton(
-                    onPressed: () => onVideoStreamingButtonPressed(),
-                    style: ButtonStyle( backgroundColor: MaterialStateProperty.all<Color>(Colors.blue)),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.videocam),
-                        SizedBox(width: 10),
-                        Text(
-                          'Start Stream',
-                          style: TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
+                          onPressed: () => onVideoStreamingButtonPressed(),
+                          style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  Colors.blue)),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.videocam),
+                              SizedBox(width: 10),
+                              Text(
+                                'Start Stream',
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
                   actions: [
                     Padding(
                       padding: const EdgeInsets.all(10.0),
@@ -246,9 +257,15 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
                   ],
                 ),
               ),
-              Positioned( top: 200, child: ElevatedButton(onPressed: () async {
-                Uint8List a = await controller!.takePhoto();
-              },child: Text("capture"),))
+              Positioned(
+                  top: 200,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      print("onpressed!");
+                      await controller!.takePhoto();
+                    },
+                    child: Text("capture"),
+                  ))
             ],
           ),
         ),
@@ -294,6 +311,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       ResolutionPreset.medium,
       enableAudio: enableAudio,
       androidUseOpenGL: useOpenGL,
+      takePhotoCallback: (image) {
+        print("call back!!");
+      },
     );
 
     // If the controller is updated then update the UI.
@@ -374,7 +394,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         _timer = null;
       }
       url = myUrl;
-      await controller!.startVideoStreaming(url!, androidUseOpenGL: false, width: 480, height: 640);
+      await controller!.startVideoStreaming(url!,
+          androidUseOpenGL: false, width: 480, height: 640);
       // _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
       //   var stats = await controller!.getStreamStatistics();
       //   print(stats);
@@ -424,6 +445,10 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   void _showCameraException(CameraException e) {
     logError(e.code, e.description);
     showInSnackBar('Error: ${e.code}\n${e.description}');
+  }
+
+  void _showDialog(Image image, BuildContext context) {
+    showDialog(context: context, builder: (context) => AlertDialog(actions: [image],));
   }
 }
 

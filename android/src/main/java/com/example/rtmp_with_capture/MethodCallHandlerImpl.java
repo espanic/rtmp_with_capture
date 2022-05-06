@@ -1,7 +1,6 @@
 package com.example.rtmp_with_capture;
 
 
-
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.hardware.camera2.CameraAccessException;
@@ -22,7 +21,6 @@ import io.flutter.view.TextureRegistry;
 import io.flutter.view.TextureRegistry.SurfaceTextureEntry;
 
 
-
 public final class MethodCallHandlerImpl implements MethodCallHandler {
     private final MethodChannel methodChannel;
     private final EventChannel imageStreamChannel;
@@ -33,6 +31,7 @@ public final class MethodCallHandlerImpl implements MethodCallHandler {
     private final PermissionStuff permissionsRegistry;
     private final TextureRegistry textureRegistry;
 
+
     @RequiresApi(21)
     public void onMethodCall(@NonNull final MethodCall call, @NonNull final Result result) {
 
@@ -40,136 +39,138 @@ public final class MethodCallHandlerImpl implements MethodCallHandler {
         Log.i("methodcallhandlerimpl", method);
         if (method != null) {
             Integer bitrate;
-                    if (method.equals("availableCameras")) {
-                        try {
-                            result.success(CameraUtils.INSTANCE.getAvailableCameras(this.activity));
-                        } catch (Exception e) {
-                            this.handleException(e, result);
-                        }
-                        return;
-                    }
-                    if (method.equals("resumeVideoStreaming")) {
-                        camera.resumeVideoStreaming(result);
-                        return;
-                    }
-                    if (method.equals("prepareForVideoRecording")) {
-                        result.success((Object)null);
-                        return;
-                    }
-                    if (method.equals("pauseVideoStreaming")) {
-                        camera.pauseVideoStreaming(result);
-                        return;
-                    }
+            if (method.equals("availableCameras")) {
+                try {
+                    result.success(CameraUtils.INSTANCE.getAvailableCameras(this.activity));
+                } catch (Exception e) {
+                    this.handleException(e, result);
+                }
+                return;
+            }
+            if (method.equals("resumeVideoStreaming")) {
+                camera.resumeVideoStreaming(result);
+                return;
+            }
+            if (method.equals("prepareForVideoRecording")) {
+                result.success((Object) null);
+                return;
+            }
+            if (method.equals("pauseVideoStreaming")) {
+                camera.pauseVideoStreaming(result);
+                return;
+            }
 
 
-                    if (method.equals("stopRecordingOrStreaming")) {
-                        camera.stopVideoRecordingOrStreaming(result);
-                        return;
-                    }
+            if (method.equals("stopRecordingOrStreaming")) {
+                camera.stopVideoRecordingOrStreaming(result);
+                return;
+            }
 
-                    if (method.equals("startVideoStreaming")) {
-                        Log.i("Stuff", call.arguments.toString());
-                        bitrate = null;
-                        if (call.hasArgument("bitrate")) {
-                            bitrate = call.argument("bitrate");
-                        }
-
-
-                        camera.startVideoStreaming((String)call.argument("url"), bitrate, result, (int) call.argument("width"), (int) call.argument("height"));
-                        return;
-                    }
-
-                    if (method.equals("getStreamStatistics")) {
-                        try {
-                            camera.getStreamStatistics(result);
-                        } catch (Exception e) {
-                            this.handleException(e, result);
-                        }
-
-                        return;
-                    }
-
-                    if (method.equals("initialize")) {
-                        if (this.camera != null) {
-                            camera.close();
-                        }
+            if (method.equals("startVideoStreaming")) {
+                Log.i("Stuff", call.arguments.toString());
+                bitrate = null;
+                if (call.hasArgument("bitrate")) {
+                    bitrate = call.argument("bitrate");
+                }
 
 
+                camera.startVideoStreaming((String) call.argument("url"), bitrate, result, (int) call.argument("width"), (int) call.argument("height"));
+                return;
+            }
 
-                        cameraPermissions.requestPermissions(activity, permissionsRegistry, call.argument("enableAudio"), (CameraPermissions.ResultCallback) (new CameraPermissions.ResultCallback() {
-                            public void onResult(@Nullable String errorCode, @Nullable String errorDescription) {
-                                if (errorCode == null) {
-                                    try {
-                                        MethodCallHandlerImpl.this.instantiateCamera(call, result);
-                                    } catch (Exception var4) {
-                                        MethodCallHandlerImpl.this.handleException(var4, result);
-                                    }
-                                } else {
-                                    result.error(errorCode, errorDescription, (Object)null);
-                                }
+            if (method.equals("getStreamStatistics")) {
+                try {
+                    camera.getStreamStatistics(result);
+                } catch (Exception e) {
+                    this.handleException(e, result);
+                }
 
+                return;
+            }
+
+            if (method.equals("initialize")) {
+                if (this.camera != null) {
+                    camera.close();
+                }
+
+
+                cameraPermissions.requestPermissions(activity, permissionsRegistry, call.argument("enableAudio"), (CameraPermissions.ResultCallback) (new CameraPermissions.ResultCallback() {
+                    public void onResult(@Nullable String errorCode, @Nullable String errorDescription) {
+                        if (errorCode == null) {
+                            try {
+                                MethodCallHandlerImpl.this.instantiateCamera(call, result);
+                            } catch (Exception var4) {
+                                MethodCallHandlerImpl.this.handleException(var4, result);
                             }
-                        }));
-                        return;
-                    }
-
-                    if (method.equals("startImageStream")) {
-                        try {
-
-
-                            camera.startPreviewWithImageStream(this.imageStreamChannel);
-                            result.success((Object)null);
-                        } catch (Exception e) {
-                            this.handleException(e, result);
+                        } else {
+                            result.error(errorCode, errorDescription, (Object) null);
                         }
 
-                        return;
                     }
+                }));
+                return;
+            }
 
-                    if (method.equals("startVideoRecordingAndStreaming")) {
-                        Log.i("Stuff", call.arguments.toString());
-                        bitrate = null;
-                        if (call.hasArgument("bitrate")) {
-                            bitrate = call.argument("bitrate");
-                        }
+            if (method.equals("startImageStream")) {
+                try {
 
 
-                        camera.startVideoRecordingAndStreaming(call.argument("filePath"), (String)call.argument("url"), bitrate, result);
-                        return;
-                    }
+                    camera.startPreviewWithImageStream(this.imageStreamChannel);
+                    result.success((Object) null);
+                } catch (Exception e) {
+                    this.handleException(e, result);
+                }
 
-                    if (method.equals("dispose")) {
-                        if (this.camera != null) {
-                            camera.dispose();
-                        }
+                return;
+            }
 
-                        result.success((Object)null);
-                        return;
-                    }
+            if (method.equals("takePhoto")) {
+                byte[] byteArray = camera.takePhoto();
+                Log.i("mh", "sending byte array");
+                result.success(null);
+                methodChannel.invokeMethod("getPhoto", byteArray);
 
-                    if (method.equals("stopImageStream")) {
-                        try {
+            }
 
-                            camera.startPreview();
-                            result.success((Object)null);
-                        } catch (Exception var6) {
-                            this.handleException(var6, result);
-                        }
+            if (method.equals("startVideoRecordingAndStreaming")) {
+                Log.i("Stuff", call.arguments.toString());
+                bitrate = null;
+                if (call.hasArgument("bitrate")) {
+                    bitrate = call.argument("bitrate");
+                }
 
-                        return;
-                    }
 
-                    if (method.equals("stopStreaming")) {
+                camera.startVideoRecordingAndStreaming(call.argument("filePath"), (String) call.argument("url"), bitrate, result);
+                return;
+            }
 
-                        camera.stopVideoStreaming(result);
-                        return;
-                    }
+            if (method.equals("dispose")) {
+                if (this.camera != null) {
+                    camera.dispose();
+                }
 
-                    if(method.equals("takePhoto")){
-                        byte[] byteArray = camera.takePhoto();
-                        result.success(byteArray);
-                        Log.i("mh", "sending byte array");
-                    }
+                result.success((Object) null);
+                return;
+            }
+
+            if (method.equals("stopImageStream")) {
+                try {
+
+                    camera.startPreview();
+                    result.success((Object) null);
+                } catch (Exception var6) {
+                    this.handleException(var6, result);
+                }
+
+                return;
+            }
+
+            if (method.equals("stopStreaming")) {
+
+                camera.stopVideoStreaming(result);
+                return;
+            }
+
 
         }
 
@@ -181,14 +182,14 @@ public final class MethodCallHandlerImpl implements MethodCallHandler {
 //    }
 
     public final void stopListening() {
-        this.methodChannel.setMethodCallHandler((MethodCallHandler)null);
+        this.methodChannel.setMethodCallHandler((MethodCallHandler) null);
     }
 
     @RequiresApi(21)
     private final void instantiateCamera(MethodCall call, Result result) throws CameraAccessException {
-        String cameraName = (String)call.argument("cameraName");
-        String resolutionPreset = (String)call.argument("resolutionPreset");
-        String streamingPreset = (String)call.argument("streamingPreset");
+        String cameraName = (String) call.argument("cameraName");
+        String resolutionPreset = (String) call.argument("resolutionPreset");
+        String streamingPreset = (String) call.argument("streamingPreset");
         boolean enableAudio = call.argument("enableAudio");
         boolean enableOpenGL = false;
         if (call.hasArgument("enableAndroidOpenGL")) {
@@ -204,7 +205,7 @@ public final class MethodCallHandlerImpl implements MethodCallHandler {
     @RequiresApi(21)
     private final void handleException(Exception exception, Result result) {
         if (exception instanceof CameraAccessException) {
-            result.error("CameraAccess", exception.getMessage(), (Object)null);
+            result.error("CameraAccess", exception.getMessage(), (Object) null);
         }
 
         if (exception == null) {
@@ -223,6 +224,7 @@ public final class MethodCallHandlerImpl implements MethodCallHandler {
         this.textureRegistry = textureRegistry;
         this.methodChannel = new MethodChannel(this.messenger, "rtmp_with_capture");
         this.imageStreamChannel = new EventChannel(this.messenger, "rtmp_with_capture/imageStream");
+        
         this.methodChannel.setMethodCallHandler(this);
     }
 }
