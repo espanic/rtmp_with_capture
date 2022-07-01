@@ -2,15 +2,16 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:image/image.dart' as img;
 
 part 'camera_image.dart';
 
 const MethodChannel _channel = MethodChannel('rtmp_with_capture');
 
-typedef TakePhotoCallback = void Function(Image image);
+typedef TakePhotoCallback1 = Future<void> Function(img.Image image);
+typedef TakePhotoCallback2 = Future<void> Function(Uint8List binary);
 
 enum CameraLensDirection { front, back, external }
 
@@ -264,22 +265,34 @@ class CameraController extends ValueNotifier<CameraValue> {
   final ResolutionPreset? resolutionPreset;
   final ResolutionPreset? streamingPreset;
   final bool? enableAudio;
-  Image? captureImage;
+  img.Image? captureImage;
+  Uint8List? data;
   int? _textureId;
   bool? _isDisposed = false;
   StreamSubscription<dynamic>? _eventSubscription;
   StreamSubscription<dynamic>? _imageStreamSubscription;
   Completer<void>? _creatingCompleter;
   final bool? androidUseOpenGL;
-  TakePhotoCallback? takePhotoCallback;
+  TakePhotoCallback1? takePhotoCallback1;
+  TakePhotoCallback2? takePhotoCallback2;
+  bool? getPhotoByBinary;
+  int captureWidth;
+  int captureHeight;
 
+  /// With takePhotoCallback1, handle the callback function with images. With takePhotoCallback2,
+  /// handle the callback function with binary(Uint8List). You must set getPhotoByBinary true to use
+  /// takePhotoCallback2.
   CameraController(
     this.description,
     this.resolutionPreset, {
     this.enableAudio = true,
     this.streamingPreset,
     this.androidUseOpenGL = false,
-    this.takePhotoCallback,
+    this.takePhotoCallback1,
+    this.takePhotoCallback2,
+    this.getPhotoByBinary,
+    this.captureWidth = 480,
+    this.captureHeight = 640,
   }) : super(CameraValue.uninitialized());
 
   Future<void> initialize() async {
@@ -507,8 +520,8 @@ class CameraController extends ValueNotifier<CameraValue> {
         'textureId': _textureId,
         'url': url,
         'bitrate': bitrate,
-        'width': width,
-        'height': height
+        'width': width ?? 480,
+        'height': height ?? 640
       });
       value =
           value.copyWith(isStreamingVideoRtmp: true, isStreamingPaused: false);
@@ -648,26 +661,33 @@ class CameraController extends ValueNotifier<CameraValue> {
   }
 
   ///callback from android when "takephoto" method is called by flutter
-  Future<void> _getPhoto(MethodCall call) async {
+  Future<void> _getPhoto(MethodCall call)   {
     if (call.method == 'getPhoto') {
-      Uint8List data = call.arguments;
-      print("data size : ${data.length}");
-      captureImage =
-          Image.memory(data, height: 640, width: 480, fit: BoxFit.none);
-      if (captureImage == null) {
-        print("captureImage null!!");
+      data = call.arguments;
+      if (data != null) {
+        if (getPhotoByBinary == true) {
+          if (takePhotoCallback2 == null) {
+            print("takephotocallback2 null!");
+          }
+          return takePhotoCallback2!(data!).then((value) => null);
+        }
+        captureImage = img.Image.fromBytes(480, 640, data!);
+        if (captureImage == null) {
+          print("captureImage null!!");
+        } else {
+          print(
+              "capture image width : ${captureImage!.width}, height : ${captureImage!.height}");
+          if (takePhotoCallback1 != null) {
+            return takePhotoCallback1!(captureImage!).then((value) => null);
+          } else {
+            print("takePhotoCallback null!!");
+          }
+        }
       } else {
-        print(
-            "capture image width : ${captureImage!.width}, height : ${captureImage!.height}");
-        if (takePhotoCallback != null) {
-          print("takePhotoCallback called!!");
-          takePhotoCallback!(captureImage!);
-        }
-        else{
-          print("takePhotoCallback null!!");
-        }
+        print("fail to get image data.");
       }
     }
+    return Future.value();
   }
 
   /// Releases the resources of this camera.

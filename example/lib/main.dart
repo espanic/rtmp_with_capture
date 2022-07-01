@@ -64,7 +64,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     print("initialized");
     streaming = false;
     cameraDirection = 'front';
-    controller = CameraController(cameras[1], ResolutionPreset.high, takePhotoCallback: (image) {
+    controller = CameraController(cameras[1], ResolutionPreset.high, takePhotoCallback1: (image) {
       _showDialog(image, context);
     },);
     await controller!.initialize();
@@ -105,7 +105,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         ResolutionPreset.high,
         enableAudio: enableAudio,
         androidUseOpenGL: useOpenGL,
-        takePhotoCallback: (image) {
+        takePhotoCallback1: (image) {
           _showDialog(image, context);
         },
       );
@@ -142,7 +142,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         ResolutionPreset.high,
         enableAudio: enableAudio,
         androidUseOpenGL: useOpenGL,
-        takePhotoCallback: (image) {
+        takePhotoCallback1: (image) {
           _showDialog(image, context);
         },
       );
@@ -311,7 +311,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       ResolutionPreset.medium,
       enableAudio: enableAudio,
       androidUseOpenGL: useOpenGL,
-      takePhotoCallback: (image) {
+      takePhotoCallback1: (image) {
         print("call back!!");
       },
     );
